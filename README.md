@@ -4,6 +4,7 @@ FRONTIER is a deep reinforcement learning model for portfolio management that ta
 # Roadmap (TODO)
 - [x] Add data folders containing market data
 - [ ] Run simple test to see if containerised environment setup works properly
+- [ ] Rename REINFORCE to FRONTIER (folder names, script imports, documentation, etc.)
 - [ ] Reorganise folders and files to improve repo readability
 - [ ] Branch off main to add new features for NCAA paper
 - [ ] Disable transaction costs and investor preferences and run a simple long-only test to maximise portfolio returns to see how it compares to MA-FDRNN, DDPG, PPO, etc.
