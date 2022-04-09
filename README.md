@@ -11,4 +11,6 @@ FRONTIER is a deep reinforcement learning model for portfolio management that ta
 - [ ] Update transaction cost faunction in reward signal
 - [ ] Update activation function of policy function output layer to allow short positions (and make sure weights sum to 1)
 - [ ] Run a couple of tests to confirm transaction costs and portfolio balances are modelled correctly
-- [ ] Rerun tests on different markets to see how performance is impacted by allowing short trades
+- [ ] Rerun tests on different markets to see how performance is impacted after allowing short trades
+- [ ] Write paper
+- [ ] Publish paper and open source this repo
