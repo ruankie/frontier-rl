@@ -10,4 +10,4 @@ RUN apt update && \
 COPY ./requirements.txt /requirements.txt
 
 RUN pip3 install --no-cache-dir -r /requirements.txt
-#EXPOSE 8080
+EXPOSE 8080
