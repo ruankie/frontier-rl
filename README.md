@@ -17,11 +17,11 @@ FRONTIER is a deep reinforcement learning model for portfolio management that ta
 - [x] Set up containerised development environment to easily reproduce results
 - [x] Set up Discord server for project
 - [ ] Add other paper authors as repo contributors (in progress)
-    * Prof. van Zyl added
-    * Awaiting response from Andrew
-- [ ] Run simple test to see if containerised environment setup works properly (in progress)
-    * Training of RL models with CNN policy network works
-    * Test of backtests still required
+    - [x] Add Prof. van Zyl
+    - [ ] Add Andrew
+- [x] Run simple test to see if containerised environment setup works properly
+    - [x] Training of RL models with CNN policy network
+    - [x] Backtesting trained RL models with CNN policy network
 - [ ] Rename REINFORCE to FRONTIER (folder names, script imports, documentation, etc.)
 - [ ] Reorganise folders and files to improve repo readability
 - [ ] Branch off main to add new features for NCAA paper
