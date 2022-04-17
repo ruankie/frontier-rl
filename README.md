@@ -12,7 +12,7 @@ FRONTIER is a deep reinforcement learning model for portfolio management that ta
 5. Run `code/REINFORCE/backtest_template.ipynb` to see an example of how trained modela are backtested
 
 # Roadmap (TODO)
-### Setting up contributors and environment to checking that everythin works as it did before
+### Setting up contributors and development environment
 - [x] Add code from original study
 - [x] Add data folders containing market data
 - [x] Set up containerised development environment to easily reproduce results
