@@ -9,7 +9,7 @@ FRONTIER is a deep reinforcement learning model for portfolio management that ta
     * Install the requiremetns in your local environment by running `pip install -r requirements.txt`
 3. Browse through `code/REINFORCE/REINFORCE_soft.py` to see the details of the environment and model architecture, training, backtesting, etc.
 4. Run `code/REINFORCE/train_template.ipynb` to see an example of how the models are trained
-5. Run `code/REINFORCE/backtest_template.ipynb` to see an example of how a trained model is backtested
+5. Run `code/REINFORCE/backtest_template.ipynb` to see an example of how trained modela are backtested
 
 # Roadmap (TODO)
 ### Setting up contributors and environment to checking that everythin works as it did before
@@ -20,7 +20,7 @@ FRONTIER is a deep reinforcement learning model for portfolio management that ta
 - [ ] Add other paper authors as repo contributors (in progress)
     - [x] Add Prof. van Zyl
     - [ ] Add Andrew
-- [x] Run simple test to see if containerised environment setup works properly
+- [x] Run simple test on small portfolio (5 assets) to see if containerised environment setup works properly
     - [x] Training of RL models with CNN policy network
     - [x] Backtesting trained RL models with CNN policy network
 - [ ] Rename REINFORCE to FRONTIER (folder names, script imports, documentation, etc.)
