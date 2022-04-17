@@ -1,10 +1,21 @@
 # Description
 FRONTIER is a deep reinforcement learning model for portfolio management that takes investor preferences into account. The original version allows long-only trades (see [this paper](https://doi.org/10.36227/techrxiv.19165745.v1) for more details). This repo will extend the original version to allow short trades as well.
 
+# How to use
+1. Clone this repo onto your machine
+2. Open development environment using one of the following methods:
+    * Open in VS code using the `Remote-Containers` extension
+    * Manually reproduce the development environment using the Dockerfile in `.devcontainer/`
+    * Install the requiremetns in your local environment by running `pip install -r requirements.txt`
+3. Browse through `code/REINFORCE/REINFORCE_soft.py` to see the details of the environment and model architecture, training, backtesting, etc.
+4. Run `code/REINFORCE/train_template.ipynb` to see an example of how the models are trained
+5. Run `code/REINFORCE/backtest_template.ipynb` to see an example of how a trained model is backtested
+
 # Roadmap (TODO)
 - [x] Add code from original study
 - [x] Add data folders containing market data
 - [x] Set up containerised development environment to easily reproduce results
+- [x] Set up Discord server for project
 - [ ] Add other paper authors as repo contributors
 - [ ] Run simple test to see if containerised environment setup works properly
 - [ ] Rename REINFORCE to FRONTIER (folder names, script imports, documentation, etc.)
