@@ -23,8 +23,10 @@ FRONTIER is a deep reinforcement learning model for portfolio management that ta
 - [x] Run simple test on small portfolio (5 assets) to see if containerised environment setup works properly
     - [x] Training of RL models with CNN policy network
     - [x] Backtesting trained RL models with CNN policy network
-- [ ] Rename REINFORCE to FRONTIER (folder names, script imports, documentation, etc.)
 - [ ] Reorganise folders and files to improve repo readability
+    - [x] Restructure folders, scripts, notebooks, etc.
+    - [ ] Update contents of notebooks and scripts to respect new folder structure
+- [ ] Rename REINFORCE to FRONTIER (folder names, script imports, documentation, etc.)
 
 ### Add changes to extend study
 - [ ] Branch off main to add new features for NCAA paper
