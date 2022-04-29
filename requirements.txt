@@ -1,6 +1,3 @@
-# local package
--e .
-
 # main requirements:
 #-------------------
 # anaconda-client==1.7.2

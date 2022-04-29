@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 #import matplotlib.pyplot as plt
 import quandl
-from quandl_api_key import my_api_key # use your own Quandl API key please
+#from quandl_api_key import my_api_key # use your own Quandl API key please
 import os
 
 def _maybe_make_dir(directory):
