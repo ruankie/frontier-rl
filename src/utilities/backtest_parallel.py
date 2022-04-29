@@ -22,8 +22,8 @@ def backtest_rl(seeds, market_name, tickers, model_base_name, from_date, until_d
     start = time.time()
     print(f'\tstarting {model_base_name} on {market_name} [{from_date} - {until_date}] with seeds {seeds}.')
     pm.execute_notebook(
-                    input_path='backtest_template.ipynb',
-                    output_path=f'slave_notebooks/backtests/{model_base_name}_{market_name}_({seeds[0]}_etc).ipynb',
+                    input_path='../../notebooks/backtest_template.ipynb',
+                    output_path=f'../../notebooks/slave_notebooks/backtests/{model_base_name}_{market_name}_({seeds[0]}_etc).ipynb',
                     parameters={
                                 'SEED_LIST':seeds,
                                 'TICKERS':tickers,
@@ -43,8 +43,8 @@ if __name__ == '__main__':
     # start timer
     #main_start = time.time()
 
-    if not os.path.exists('slave_notebooks/backtests'):
-        os.makedirs('slave_notebooks/backtests')
+    if not os.path.exists('../../notebooks/slave_notebooks/backtests'):
+        os.makedirs('../../notebooks/slave_notebooks/backtests')
 
     # read in config_file
     with open('backtest_config.json') as json_file:  

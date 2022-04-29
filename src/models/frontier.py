@@ -227,7 +227,7 @@ def backtest_online(agent, env, weights_file_dir=None, verbose=False):
         mini_batch_env = MultiStockEnv(tickers=env.tickers, from_date=env.returns.iloc[[env.days_duration]].index.date[0], until=env.curr_time, #nb_episodes=100, 
                  cash_key='USDOLLAR', gamma_risk=env.gamma_risk, gamma_trade=env.gamma_trade,
                  half_spread=env.half_spread, nonlin_coef=env.nonlin_coef, power=env.power,
-                 datadir=r'C:/Wits/2021/COMS7061 - Research Project/data/processed_data/', 
+                 datadir=r'../../data/processed_data/', 
                  state_lookback_window=env.state_lookback_window, distribution='geometric',
                  days_duration=env.days_duration, mode='train', #random_seed=env.random_seed,
                  init_portfolio=env.init_portfolio, verbose=False)
@@ -268,7 +268,7 @@ class MultiStockEnv:
     def __init__(self, tickers=TICKERS, from_date=FROM, until=UNTIL, #nb_episodes=100, 
                  cash_key='USDOLLAR', gamma_risk=GAMMA_RISK, gamma_trade=GAMMA_TRADE,
                  half_spread=HALF_SPREAD, nonlin_coef=NONLIN_COEFF, power=POWER,
-                 datadir=r'C:/Wits/2021/COMS7061 - Research Project/data/processed_data/', 
+                 datadir=r'../../data/processed_data/', 
                  state_lookback_window=20, distribution=EPISODE_DRAW_DISTRIBUTION,
                  days_duration=DAYS_IN_EPISODE, mode='train', random_seed=RANDOM_SEED,
                  init_portfolio=INIT_PORTFOLIO, period_in_file_name=FILE_PERIOD, 

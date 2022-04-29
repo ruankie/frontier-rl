@@ -12,8 +12,8 @@ def inspect_actions(market_name, model_base_name, nb_plots):
     start = time.time()
     print(f'\tstarting {model_base_name} on {market_name} ({nb_plots} plots)...')
     pm.execute_notebook(
-                    input_path='inspect_backtest_actions_template.ipynb',
-                    output_path=f'slave_notebooks/actions/{model_base_name}_{market_name}.ipynb',
+                    input_path='../../notebooks/inspect_backtest_actions_template.ipynb',
+                    output_path=f'../../notebooks/slave_notebooks/actions/{model_base_name}_{market_name}.ipynb',
                     parameters={
                                 'MARKET_NAME':market_name,
                                 'MODEL_BASE_NAME':model_base_name,
@@ -29,8 +29,8 @@ if __name__ == '__main__':
     # start timer
     #main_start = time.time()
 
-    if not os.path.exists('slave_notebooks/actions'):
-        os.makedirs('slave_notebooks/actions')
+    if not os.path.exists('../../notebooks/slave_notebooks/actions'):
+        os.makedirs('../../notebooks/slave_notebooks/actions')
 
     all_markets = ['DOW_30', 'LA_40', 'NIK_25']
     all_base_names = ['RL_CNN', 'RL_str_fcast', 'RL_all_inp']

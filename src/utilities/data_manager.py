@@ -14,7 +14,7 @@ def _maybe_make_dir(directory):
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-def _load_historical_price_data(ticker_list, start_date='2011', end_date='2017', data_dir='historical_data/'):
+def _load_historical_price_data(ticker_list, start_date='2011', end_date='2017', data_dir='../../data/market/historical_data/'):
     '''return DataFrame with historical price data read from previously saved .csv files
     in data_dir. This includes OHLCV data for all tickers in ticker_list.'''
     all_data_files = glob.glob(data_dir + '*.csv')
@@ -63,7 +63,7 @@ class Downloader:
     and end date. Cash data can also be downloaded (3-month treasury bill data from Quandl).
     All downloaded data are saved in csv files in a 'historical_data' directory.
     '''
-    def __init__(self, ticker_list, start_date, end_date, interval='1d', save_dir='historical_data/', verbose=True): #cash_key='USDOLLAR'
+    def __init__(self, ticker_list, start_date, end_date, interval='1d', save_dir='../../data/market/historical_data/', verbose=True): #cash_key='USDOLLAR'
         ticker_list.sort()
         self.ticker_list = ticker_list
         self.start_date = start_date
@@ -106,7 +106,7 @@ class Preprocessor:
     some preprocessing steps are the same as used in Boyd et al. (2017) and Nystrup et al. (2020)
     '''
     def __init__(self, ticker_list, start_date, end_date, interval='1d', cash_key='USDOLLAR', 
-                load_dir='historical_data/', save_dir='preprocessed_data/', verbose=True):
+                load_dir='../../data/market/historical_data/', save_dir='../../data/market/preprocessed_data/', verbose=True):
         ticker_list.sort()
         self.ticker_list = ticker_list
         self.start_date = start_date
@@ -294,7 +294,7 @@ class FactorRiskModel:
     prior to the start date of any backtest (the backtest start date must be 
     given as start_date).
     '''
-    def __init__(self, start_date, k=15, load_dir='preprocessed_data/', verbose=True):
+    def __init__(self, start_date, k=15, load_dir='../../data/market/preprocessed_data/', verbose=True):
         self.start_date = start_date
         self.k = k
         self.load_dir = load_dir

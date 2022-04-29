@@ -22,8 +22,8 @@ def reproduce_backtest(market_name, from_date, until_date, model_name, constrain
     start = time.time()
     print(f'\tstarting {model_base_name} on {market_name} [{from_date} - {until_date}] with seeds {seeds}.')
     pm.execute_notebook(
-                    input_path='train_template.ipynb',
-                    output_path=f'slave_notebooks/{model_base_name}_{market_name}_({seeds[0]}_etc).ipynb',
+                    input_path='../../notebooks/train_template.ipynb',
+                    output_path=f'../../notebooks/slave_notebooks/{model_base_name}_{market_name}_({seeds[0]}_etc).ipynb',
                     parameters={
                                 'SEED_LIST':seeds,
                                 'TICKERS':tickers,
@@ -44,8 +44,8 @@ if __name__ == '__main__':
     # start timer
     #main_start = time.time()
 
-    if not os.path.exists('slave_notebooks'):
-        os.makedirs('slave_notebooks')
+    if not os.path.exists('../../notebooks/slave_notebooks'):
+        os.makedirs('../../notebooks/slave_notebooks')
 
     # read in config_file
     with open('train_config.json') as json_file:  
