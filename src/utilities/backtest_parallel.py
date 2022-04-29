@@ -3,7 +3,7 @@ import papermill as pm
 from multiprocessing import Process, cpu_count
 import numpy as np
 import time
-import market_tickers
+from src.config import market_tickers
 import os
 
 def split_seeds(all_seeds, n):
