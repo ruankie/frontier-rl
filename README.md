@@ -27,7 +27,19 @@ FRONTIER is a deep reinforcement learning model for portfolio management that ta
     - [x] Restructure folders, scripts, notebooks, etc.
     - [x] Update contents of notebooks and scripts to respect new folder structure
 - [x] Rename REINFORCE to FRONTIER (folder names, script imports, documentation, etc.)
+- [ ] Put Quandl key in dotenv, make sure it's in .gitignore, and update loading key in src/utilities/data_manager.py
 - [ ] Test all noteboks and scripts to see if everything works as expected after folder restructure and renaming
+    - [x] notebooks/train_template.ipynb
+    - [ ] notebooks/backtest_template.ipynb
+    - [ ] notebooks/backtest_actions.ipynb
+    - [ ] notebooks/inspect_backtest_actions_template.ipynb
+    - [ ] notebooks/data_processor.ipynb
+    - [ ] notebooks/get_index_data.ipynb
+    - [ ] notebooks/hot-fix.ipynb
+    - [ ] src/utilities/train_parallel.py
+    - [ ] src/utilities/backtest_parallel.py
+    - [ ] src/utilities/inspect_bt_actions_parallel.py
+    
 
 ### Add changes to extend study
 - [ ] Branch off main to add new features for NCAA paper
