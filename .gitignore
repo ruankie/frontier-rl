@@ -2,7 +2,8 @@
 #*.png
 
 # experiments (trained models, losses, etc.)
-*experiments/
+#*experiments/
+*seeded/
 #*models/
 
 # Byte-compiled / optimized / DLL files
