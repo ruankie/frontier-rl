@@ -3,7 +3,10 @@
 # to customise the jupyter notebook environment.  #
 ###################################################
 
-MY_PREFERENCE = 'light' # 'light', 'dark'
+import os
+from dotenv import load_dotenv
+load_dotenv()
+MY_PREFERENCE = os.getenv('PLOT_THEME') # 'light', 'dark'
 
 
 ### For dark theme plots
