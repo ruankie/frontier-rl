@@ -33,14 +33,14 @@
 		"ms-python.python",
 		"ms-python.vscode-pylance",
 		"ms-toolsai.jupyter",
-		// "eamodio.gitlens"
+		"eamodio.gitlens"
 	],
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "python --version",
+	"postCreateCommand": "pip3 install -e .",
 
 	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
 	//"remoteUser": "vscode"

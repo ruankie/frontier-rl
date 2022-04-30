@@ -3,13 +3,14 @@ FRONTIER is a deep reinforcement learning model for portfolio management that ta
 
 # How to use
 1. Clone this repo onto your machine
-2. Open development environment using one of the following methods:
+1. Open development environment using one of the following methods:
     * Open in VS code using the `Remote-Containers` extension
     * Manually reproduce the development environment using the Dockerfile in `.devcontainer/`
     * Install the requiremetns in your local environment by running `pip install -r requirements.txt`
-3. Browse through `code/REINFORCE/REINFORCE_soft.py` to see the details of the environment and model architecture, training, backtesting, etc.
-4. Run `code/REINFORCE/train_template.ipynb` to see an example of how the models are trained
-5. Run `code/REINFORCE/backtest_template.ipynb` to see an example of how trained modela are backtested
+1. Insert your API keys and desired plot teme into `.env` as per `.env_example`
+1. Browse through `src/models/frontier.py` to see the details of the environment and model architecture, training, backtesting, etc.
+1. Run `notebooks/train_template.ipynb` to see an example of how the models are trained
+1. Run `notebooks/backtest_template.ipynb` to see an example of how trained modela are backtested
 
 # Roadmap (TODO)
 ### Setting up contributors and development environment
@@ -23,8 +24,22 @@ FRONTIER is a deep reinforcement learning model for portfolio management that ta
 - [x] Run simple test on small portfolio (5 assets) to see if containerised environment setup works properly
     - [x] Training of RL models with CNN policy network
     - [x] Backtesting trained RL models with CNN policy network
-- [ ] Rename REINFORCE to FRONTIER (folder names, script imports, documentation, etc.)
-- [ ] Reorganise folders and files to improve repo readability
+- [x] Reorganise folders and files to improve repo readability
+    - [x] Restructure folders, scripts, notebooks, etc.
+    - [x] Update contents of notebooks and scripts to respect new folder structure
+- [x] Rename REINFORCE to FRONTIER (folder names, script imports, documentation, etc.)
+- [x] Put Quandl key in dotenv, make sure it's in .gitignore, and update loading key in src/utilities/data_manager.py
+- [x] Test all noteboks and scripts to see if everything works as expected after folder restructure and renaming
+    - [x] notebooks/train_template.ipynb
+    - [x] notebooks/backtest_template.ipynb
+    - [x] notebooks/backtest_actions.ipynb
+    - [x] notebooks/get_all_frontiers.ipynb
+    - [x] notebooks/inspect_backtest_actions_template.ipynb
+    - [x] notebooks/data_preprocessor.ipynb
+    - [x] notebooks/get_index_data.ipynb
+    - [x] notebooks/hot-fix.ipynb
+- [x] Add plot preferences config (LaTeX-like font and light/dark theme selector)
+    
 
 ### Add changes to extend study
 - [ ] Branch off main to add new features for NCAA paper

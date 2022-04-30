@@ -1,13 +1,13 @@
-# See here for image contents: https://github.com/microsoft/vscode-dev-containers/tree/v0.231.2/containers/python-3-anaconda/.devcontainer/base.Dockerfile
-
-#FROM mcr.microsoft.com/vscode/devcontainers/anaconda:0-3
 FROM python:3.7.6-slim
+
+COPY ./requirements.txt /requirements.txt
 
 RUN apt update && \
     apt install --no-install-recommends -y build-essential gcc && \
     apt install -y git && \
-    apt clean && rm -rf /var/lib/apt/lists/*
-COPY ./requirements.txt /requirements.txt
+    apt clean && rm -rf /var/lib/apt/lists/* && \
+    pip3 install --no-cache-dir -r /requirements.txt
 
-RUN pip3 install --no-cache-dir -r /requirements.txt
+COPY ./src/config/00_startup.py /root/.ipython/profile_default/startup/00_startup.py
+
 EXPOSE 8080

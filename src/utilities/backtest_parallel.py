@@ -3,27 +3,27 @@ import papermill as pm
 from multiprocessing import Process, cpu_count
 import numpy as np
 import time
-import market_tickers
+from src.config import market_tickers
 import os
 
-def split_gammas(all_gammas, n):
-    ''' splits a list of gamma-tuples into n sub-tuples.
+def split_seeds(all_seeds, n):
+    ''' splits a list of seeds into n sub-lists.
     '''
-    all_gammas = np.array(all_gammas)
-    gammas_sub_lists = [tuple(map(tuple, arr)) for arr in np.array_split(all_gammas, n)]
-    return tuple(gammas_sub_lists)
+    all_seeds = np.array(all_seeds)
+    seeds_sub_lists = [arr.tolist() for arr in np.array_split(all_seeds, n)]
+    return tuple(seeds_sub_lists)
 
 
-def reproduce_backtest(market_name, from_date, until_date, model_name, constraint_name, gamma_triples):
+def backtest_rl(seeds, market_name, tickers, model_base_name, from_date, until_date, nb_episodes=200):
 
-    assert market_name in ['TEST_5', 'SP_11', 'DOW_30','NIK_25','LA_40', 'SP_500'], 'must choose a valid market name (or update valid list in assertion).'
-    assert model_name in ['SPO', 'MPO'], 'must choose a valid model base name ("SPO" or "MPO").'
+    assert market_name in ['TEST_5','DOW_30','NIK_25','LA_40'], 'must choose a valid market name (or update valid list in assertion).'
+    assert model_base_name in ['RL_CNN','RL_str_fcast','RL_all_inp'], 'must choose a valid model base name (RL_CNN or RL_str_fcast or RL_all_inp).'
 
     start = time.time()
     print(f'\tstarting {model_base_name} on {market_name} [{from_date} - {until_date}] with seeds {seeds}.')
     pm.execute_notebook(
-                    input_path='train_template.ipynb',
-                    output_path=f'slave_notebooks/{model_base_name}_{market_name}_({seeds[0]}_etc).ipynb',
+                    input_path='../../notebooks/backtest_template.ipynb',
+                    output_path=f'../../notebooks/slave_notebooks/backtests/{model_base_name}_{market_name}_({seeds[0]}_etc).ipynb',
                     parameters={
                                 'SEED_LIST':seeds,
                                 'TICKERS':tickers,
@@ -32,7 +32,6 @@ def reproduce_backtest(market_name, from_date, until_date, model_name, constrain
                                 'FROM':from_date,
                                 'UNTIL':until_date,
                                 'NB_EPISODES':nb_episodes,
-                                'SAVE_EVERY':save_every,
                                },
                     progress_bar=True,
                    )
@@ -44,16 +43,15 @@ if __name__ == '__main__':
     # start timer
     #main_start = time.time()
 
-    if not os.path.exists('slave_notebooks'):
-        os.makedirs('slave_notebooks')
+    if not os.path.exists('../../notebooks/slave_notebooks/backtests'):
+        os.makedirs('../../notebooks/slave_notebooks/backtests')
 
     # read in config_file
-    with open('train_config.json') as json_file:  
+    with open('backtest_config.json') as json_file:  
         config = json.load(json_file)    
     all_seeds = config['RANDOM_SEEDS']
     all_base_names = config['MODEL_BASE_NAMES']
     nb_episodes = config['NB_EPISODES']
-    save_every = config['SAVE_EVERY']
     all_markets = config['MARKETS']
     nb_workers = config['NB_WORKERS']
     if nb_workers == -1:
@@ -75,7 +73,7 @@ if __name__ == '__main__':
         tickers = getattr(market_tickers, market_name+'_TICKER')
         for mod_idx, mod_name in enumerate(all_base_names): # for all models
             for seed_idx in range(len(seed_sets)): # for all seed sets
-                proc = Process(target=train_rl, args=(seed_sets[seed_idx], market_name, tickers, mod_name, dates['FROM'], dates['UNTIL'], nb_episodes, save_every))
+                proc = Process(target=backtest_rl, args=(seed_sets[seed_idx], market_name, tickers, mod_name, dates['FROM'], dates['UNTIL'], nb_episodes))
                 processes.append(proc)
                 proc.start()
             
