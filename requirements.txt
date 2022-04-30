@@ -35,8 +35,10 @@ seaborn==0.10.0
 six==1.15.0
 # Sphinx==2.4.0
 # statsmodels==0.11.0
+tables==3.6.1
 tensorflow==2.4.0
-yfinance==0.1.54
+#yfinance==0.1.54
+yfinance==0.1.70
 
 
 # all requiremetns:

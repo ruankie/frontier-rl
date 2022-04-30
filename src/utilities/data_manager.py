@@ -21,12 +21,13 @@ def _load_historical_price_data(ticker_list, start_date='2011', end_date='2017',
     '''return DataFrame with historical price data read from previously saved .csv files
     in data_dir. This includes OHLCV data for all tickers in ticker_list.'''
     all_data_files = glob.glob(data_dir + '*.csv')
+    #print(f'all_data_files:\n{all_data_files}')
 
     ticker_dfs = []
     file_tickers_list = []
 
     for filename in all_data_files:
-        ticker = filename.split('data\\')[1].split('_')[0] # Linux: .split('data/')  ||  Windows: .split('data\\')        #.split('_'+period_in_file_name)[0]
+        ticker = filename.split('historical_data/')[1].split('_')[0] # Linux: .split('data/')  ||  Windows: .split('data\\')        #.split('_'+period_in_file_name)[0]
         #print(f'\t***ticker: {ticker}')
         # load if ticker is in requested load list
         if ticker in ticker_list:
