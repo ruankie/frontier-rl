@@ -39,7 +39,7 @@ FRONTIER is a deep reinforcement learning model for portfolio management that ta
     - [ ] src/utilities/train_parallel.py
     - [ ] src/utilities/backtest_parallel.py
     - [ ] src/utilities/inspect_bt_actions_parallel.py
-- [ ] Add plot preferences config (LaTeX-like font and dark theme)
+- [x] Add plot preferences config (LaTeX-like font and light/dark theme selector)
     
 
 ### Add changes to extend study
