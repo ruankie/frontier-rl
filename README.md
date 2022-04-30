@@ -7,7 +7,7 @@ FRONTIER is a deep reinforcement learning model for portfolio management that ta
     * Open in VS code using the `Remote-Containers` extension
     * Manually reproduce the development environment using the Dockerfile in `.devcontainer/`
     * Install the requiremetns in your local environment by running `pip install -r requirements.txt`
-1. Insert your API keys and desired plot teme into `/.env` as per `/.env_example`
+1. Insert your API keys and desired plot teme into `.env` as per `.env_example`
 1. Browse through `src/models/frontier.py` to see the details of the environment and model architecture, training, backtesting, etc.
 1. Run `notebooks/train_template.ipynb` to see an example of how the models are trained
 1. Run `notebooks/backtest_template.ipynb` to see an example of how trained modela are backtested
