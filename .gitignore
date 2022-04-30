@@ -1,5 +1,5 @@
-# images (of training loss)
-#*.png
+# images (plots of training loss, frontiers, etc.)
+*.png
 
 # experiments (trained models, losses, etc.)
 #*experiments/
