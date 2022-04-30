@@ -30,7 +30,7 @@ FRONTIER is a deep reinforcement learning model for portfolio management that ta
 - [ ] Put Quandl key in dotenv, make sure it's in .gitignore, and update loading key in src/utilities/data_manager.py
 - [ ] Test all noteboks and scripts to see if everything works as expected after folder restructure and renaming
     - [x] notebooks/train_template.ipynb
-    - [ ] notebooks/backtest_template.ipynb
+    - [x] notebooks/backtest_template.ipynb
     - [ ] notebooks/backtest_actions.ipynb
     - [ ] notebooks/inspect_backtest_actions_template.ipynb
     - [ ] notebooks/data_processor.ipynb
