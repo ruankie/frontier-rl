@@ -8,4 +8,6 @@ RUN apt update && \
     apt clean && rm -rf /var/lib/apt/lists/* && \
     pip3 install --no-cache-dir -r /requirements.txt
 
+COPY ./src/config/00_startup.py /root/.ipython/profile_default/startup/00_startup.py
+
 EXPOSE 8080
