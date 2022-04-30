@@ -31,7 +31,7 @@ FRONTIER is a deep reinforcement learning model for portfolio management that ta
 - [ ] Test all noteboks and scripts to see if everything works as expected after folder restructure and renaming
     - [x] notebooks/train_template.ipynb
     - [x] notebooks/backtest_template.ipynb
-    - [ ] notebooks/backtest_actions.ipynb
+    - [x] notebooks/backtest_actions.ipynb
     - [ ] notebooks/inspect_backtest_actions_template.ipynb
     - [ ] notebooks/data_processor.ipynb
     - [ ] notebooks/get_index_data.ipynb
@@ -39,6 +39,7 @@ FRONTIER is a deep reinforcement learning model for portfolio management that ta
     - [ ] src/utilities/train_parallel.py
     - [ ] src/utilities/backtest_parallel.py
     - [ ] src/utilities/inspect_bt_actions_parallel.py
+- [ ] Add plot preferences config (LaTeX-like font and dark theme)
     
 
 ### Add changes to extend study
