@@ -56,5 +56,6 @@ FRONTIER is a deep reinforcement learning model for portfolio management that ta
 
 ### Publish paper and code
 - [ ] Write paper
+- [ ] Make docs from docstrings for all code
 - [ ] Include detailed README or documentation for steps to use repo and reproduce results
 - [ ] Publish paper and open source this repo
