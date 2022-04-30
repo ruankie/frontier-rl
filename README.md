@@ -32,7 +32,7 @@ FRONTIER is a deep reinforcement learning model for portfolio management that ta
     - [x] notebooks/train_template.ipynb
     - [x] notebooks/backtest_template.ipynb
     - [x] notebooks/backtest_actions.ipynb
-    - [ ] notebooks/get_all_frontiers.ipynb
+    - [x] notebooks/get_all_frontiers.ipynb
     - [ ] notebooks/inspect_backtest_actions_template.ipynb
     - [ ] notebooks/data_processor.ipynb
     - [ ] notebooks/get_index_data.ipynb
