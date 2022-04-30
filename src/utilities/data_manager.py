@@ -5,8 +5,11 @@ import pandas as pd
 import numpy as np
 #import matplotlib.pyplot as plt
 import quandl
-from src.config.quandl_api_key import my_api_key # use your own Quandl API key please
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
+my_api_key = os.getenv('QUANDL_API_KEY')
 
 def _maybe_make_dir(directory):
     '''create directory if it does not exist already

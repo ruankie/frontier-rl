@@ -3,6 +3,7 @@
 # anaconda-client==1.7.2
 # anaconda-project==0.8.3
 # flake8==3.7.9
+python-dotenv==0.20.0
 ipykernel==5.1.4
 ipython==7.12.0
 ipython-genutils==0.2.0
@@ -237,6 +238,7 @@ yfinance==0.1.54
 # pytest-openfiles==0.4.0
 # pytest-remotedata==0.3.2
 # python-dateutil==2.8.1
+# python-dotenv==0.20.0
 # python-jsonrpc-server==0.3.4
 # python-language-server==0.31.7
 # pytz==2019.3
