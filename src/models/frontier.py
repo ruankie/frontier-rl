@@ -27,8 +27,8 @@ import os
 #################
 ### constants ###
 #################
-# top 12 US stocks screeded for highest 50-day average volume traded on 04-05-2018 and filtered as in Boyd (alphabetical order):
-# ['AAPL', 'AMD', 'BAC', 'CMCSA', 'CSCO', 'F', 'GE', 'INTC', 'MSFT', 'MU', 'PFE', 'T'] - remove 'PFE' fot top 11
+# top 12 US stocks screened for highest 50-day average volume traded on 04-05-2018 and filtered as in Boyd (alphabetical order):
+# ['AAPL', 'AMD', 'BAC', 'CMCSA', 'CSCO', 'F', 'GE', 'INTC', 'MSFT', 'MU', 'PFE', 'T'] - remove 'PFE' for top 11
 TICKERS = ['AAPL', 'AMD', 'BAC', 'CMCSA', 'CSCO', 'F', 'GE', 'INTC', 'MSFT', 'MU', 'T']
 FILE_PERIOD = '1d' # weekly='5d', daily='1d'
 #DF_PERIOD = 'D' # weekly='W', daily='D'
@@ -41,7 +41,8 @@ EPISODE_DRAW_DISTRIBUTION = 'uniform' # or geometric. select starting point of e
 HALF_SPREAD = 0.0005/2.0 # 'a' in transaction cost function
 NONLIN_COEFF = 1.0 # 'b' transaction cost function
 POWER = 1.5 # power for change in poertfolio vector used in transaction cost
-GAMMA_RISK, GAMMA_TRADE, GAMMA_HOLD = 18, 6.5, 0.0 # relative importance of risk, trading cost, and holding cost
+BORROW_COST = 0.0001 # the borrowing fee for short trades (page 58 of Boyd et al. (2017))
+GAMMA_RISK, GAMMA_TRADE, GAMMA_HOLD = 18, 6.5, 0.1 # relative importance of risk, trading cost, and holding cost
 INIT_PORTFOLIO = 100000000.0 # initial portfolio value
 model_name = f'REINFORCE_Soft_{UNTIL}' # give model a name to distinguish saved files
 #NB_EPISODES = 300 #2000
@@ -93,22 +94,23 @@ def maybe_make_dir(directory):
 def play_one_episode(agent, env, mode='train'):
     '''play through one episode
         agent: the agent object that interacts with the environment
-        env: the envoronment object
-        mode: select training or testing mode
+        env: the environment object
+        mode: select training or testing mode #TODO currently only checks if mode == 'train' (there's no check of it's anything else). If mode is set to anything else, episode will play as normal, just won't update agent weights
 
-    resets the env by drawing a ranom episode and clearing all tracking variables
+    resets the env by drawing a random episode and clearing all tracking variables
         - draw random episode
         - reset to start of episode
-        - set done flag to Flase
+        - set done flag to False
         - for each time-step in episode:
             - agent selects action
             - perform action and get next_state, reward, transaction cost, realised returns, info from environment
             - store transition in agent memory
-        - after getting trajecory through episode, calculate G
+        - after getting trajectory through episode, calculate G
         - update actor weights/parameters with gradient ascent
     '''
     with tf.GradientTape() as tape:
 
+        # getin initial environment state and reset agent memory
         state = env.reset()
         agent.reset_memory()
         done = False
@@ -116,8 +118,8 @@ def play_one_episode(agent, env, mode='train'):
         # get episode trajectory
         while not done:
             action = agent.choose_action(state)
-            next_state, reward, transaction_cost, realised_rets, done, info = env.step(action)
-            agent.store_transition(state, action, reward, transaction_cost, realised_rets)
+            next_state, reward, transaction_cost, holding_cost, realised_rets, done, info = env.step(action)
+            agent.store_transition(state, action, reward, transaction_cost, holding_cost, realised_rets)
             state = next_state
 
         # notify when done creating episode trajectory
@@ -125,18 +127,10 @@ def play_one_episode(agent, env, mode='train'):
             print('done creating episode trajectory.')
             print('\tnow agent weights will be updated...')
 
-        # calculate discounted future rewards
+        # calculate expected discounted future rewards for playing the episode following current policy
         G = [tf.convert_to_tensor(0.0, dtype=tf.float32)]
-        #for i in range(2, len(agent.reward_memory)+1): # for each time-step recorded in episode ignoring the first because g[-1] = 0
         for i in range(1, len(agent.reward_memory)): # for each time-step recorded in episode ignoring the first because g[-1] = 0
-            #nb_steps_ahead = i
             G.append( agent.reward_memory[-i] + tf.scalar_mul( agent.gamma, G[-1] ) )
-
-        #----------------------------------------------------------------------------
-        # should maybe be as follows otherwise last reward in agent memory is ignored:
-        #for i in range(1, len(agent.reward_memory)): # for each time-step recorded in episode ignoring the first because g[-1] = 0
-        #    G.append( agent.reward_memory[-i] + tf.scalar_mul( agent.gamma, G[-1] ) )
-        #----------------------------------------------------------------------------
 
         # calculate loss
         G = tf.stack(G, axis=0)
@@ -144,8 +138,6 @@ def play_one_episode(agent, env, mode='train'):
 
     if mode == 'train':
         gradient = tape.gradient(loss, agent.policy.trainable_variables)
-        #print()
-        #print('\tgradient:',gradient) ########### diagnostics only, remove later
         agent.policy.optimizer.apply_gradients(zip(gradient,agent.policy.trainable_variables))
 
     return loss
@@ -155,11 +147,12 @@ def backtest(agent, env, weights_file_dir=None, verbose=False):
     '''returns realised returns of the agent in the environment for backtest period.
         - agent: agent that will be used for backtest
         - env: environment that agent will interact with during backtest. remember to setup env in a 'backtest' mode
-        - weights_file_dir: file path that contains saved model weights for policy network, keep None for ranom agent
+        - weights_file_dir: file path that contains saved model weights for policy network, keep None for random agent
         - verbose: print what happens or not
     Note: the agent specified by the saved weights must have used the same investor preferences, 
-            lookback window (tau), and assets as the backtest!
-    '''# load model weights
+            look-back window (tau), and assets as the backtest!
+    '''
+    # load model weights
     if verbose:
         print(f'loading agent weights from {weights_file_dir}...')
 
@@ -177,124 +170,64 @@ def backtest(agent, env, weights_file_dir=None, verbose=False):
     # get backtest trajectory
     while not done:
         action = agent.choose_action(state)
-        next_state, reward, transaction_cost, realised_rets, done, info = env.step(action)
-        agent.store_transition(state, action, reward, transaction_cost, realised_rets)
+        next_state, reward, transaction_cost, holding_cost, realised_rets, done, info = env.step(action)
+        agent.store_transition(state, action, reward, transaction_cost, holding_cost, realised_rets)
         state = next_state
 
     if verbose:
         print('backtest done.')
 
     return np.array(agent.relised_ret_memory), np.array(env.prev_actions) #np.array(agent.action_memory)
-
-
-def backtest_online(agent, env, weights_file_dir=None, verbose=False):
-    ''' NEEDS REFINING - DOES NOT WORK!
-    returns realised returns of the agent in the environment for backtest period. This is a slightly different version
-    of the normal backtest function where online stochastic batch learning is incorporated. After each trade, model will be opdated on 
-    randomle selected episode from geometric distribution.
-        - agent: agent that will be used for backtest
-        - env: environment that agent will interact with during backtest. remember to setup env in a 'backtest' mode
-        - weights_file_dir: file path that contains saved model weights for policy network, keep None for ranom agent
-        - verbose: print what happens or not
-    Note: the agent specified by the saved weights must have used the same investor preferences, 
-            lookback window (tau), and assets as the backtest!
-    '''# load model weights
-    if verbose:
-        print(f'loading agent weights from {weights_file_dir}...') # pre-trained weights from uniformly sampled episodes before backtest
-
-    if weights_file_dir:
-        agent.load(weights_file_dir)
-
-    if verbose:
-        print('simulating backtest trajectory...')
-
-    # reset environment and agent memory
-    state = env.reset()
-    agent.reset_memory()
-    done = False
-
-    # get backtest trajectory
-    while not done:
-        action = agent.choose_action(state)
-        next_state, reward, transaction_cost, realised_rets, done, info = env.step(action)
-        agent.store_transition(state, action, reward, transaction_cost, realised_rets)
-
-        if verbose:
-            print(f'performing online stochastic batch learning at time step {env.curr_time_step}...')
-
-        # create new environment similar to env that will be responsible for the mini-batch
-        mini_batch_env = MultiStockEnv(tickers=env.tickers, from_date=env.returns.iloc[[env.days_duration]].index.date[0], until=env.curr_time, #nb_episodes=100, 
-                 cash_key='USDOLLAR', gamma_risk=env.gamma_risk, gamma_trade=env.gamma_trade,
-                 half_spread=env.half_spread, nonlin_coef=env.nonlin_coef, power=env.power,
-                 datadir=r'../../data/processed_data/', 
-                 state_lookback_window=env.state_lookback_window, distribution='geometric',
-                 days_duration=env.days_duration, mode='train', #random_seed=env.random_seed,
-                 init_portfolio=env.init_portfolio, verbose=False)
-        # randomly sample episode(s) from geometric distrubution (only include past and current data)
-        # and train/update policy net on this randomly drawn episode(s)
-        # first get current memory so that it is not lost after playing mini-batch episode
-        (_, _, _, _, current_relised_ret_memory) = agent.get_memory()
-        agent.reset_memory()
-        play_one_episode(agent, mini_batch_env, mode='train')
-        agent.relised_ret_memory = current_relised_ret_memory
-
-        # continue with backtest
-        state = next_state
-
-    if verbose:
-        print('backtest done.')
-
-    return np.array(agent.relised_ret_memory)
-
     
 
 
 ###################
 ### environment ###
 ###################
+# TODO maybe split environment, agent, policies, and play episode functions into different scripts
 
 class MultiStockEnv:
     """
     multi-stock trading environment with access to all historical data required for states
     and transaction costs.
-    State: state-space will consist of historical log-rets window, current portfolio weight matrix,
+    State: state space will consist of historical log-rets window, current portfolio weight matrix,
             historical rolling avg volume, and historical rolling avg volatility.
             later on this might include fundamentals and technical indicators
     Action: actions will be portfolio vectors of shape (nb_assets,)
     """
-    # top 11 US stocks screeded for highest 50-day average volume traded on 04-05-2018:
-    # ['AAPL', 'AMD', 'BAC', 'CMCSA', 'CSCO', 'F', 'GE', 'INTC', 'MSFT', 'MU', 'T']
     def __init__(self, tickers=TICKERS, from_date=FROM, until=UNTIL, #nb_episodes=100, 
-                 cash_key='USDOLLAR', gamma_risk=GAMMA_RISK, gamma_trade=GAMMA_TRADE,
-                 half_spread=HALF_SPREAD, nonlin_coef=NONLIN_COEFF, power=POWER,
-                 datadir=r'../../data/processed_data/', 
+                 cash_key='USDOLLAR', gamma_risk=GAMMA_RISK, gamma_trade=GAMMA_TRADE, gamma_hold=GAMMA_HOLD,
+                 half_spread=HALF_SPREAD, nonlin_coef=NONLIN_COEFF, power=POWER, borrow_costs=BORROW_COST,
+                 datadir='../../data/processed_data/', 
                  state_lookback_window=20, distribution=EPISODE_DRAW_DISTRIBUTION,
                  days_duration=DAYS_IN_EPISODE, mode='train', random_seed=RANDOM_SEED,
                  init_portfolio=INIT_PORTFOLIO, period_in_file_name=FILE_PERIOD, 
                  nb_forecasts=None, forecast_type='strong', use_CNN_state=False, verbose=False):
         '''initialise environment
             - tickers: ticker symbols of assets in portfolio
-            - from_date: use when backtesting to specify start date of backtest (e.g. '2018-01-01'), otherwilse leave as None
+            - from_date: use when backtesting to specify start date of backtest (e.g. '2018-01-01'), otherwise leave as None
             - until: end date of backtests, get data for assets only until this point in time (e.g. '2021-01-01')
-            - cash_key: key used in data for riks-free asset
+            - cash_key: key used in data for rik-free asset
             - gamma_risk: scaling factor for relative importance of risk (risk aversion parameter)
             - gamma_trade: scaling factor for relative importance of trade cost in reward function
+            - gamma_hold: scaling factor for relative importance of holding cost in reward function
             - half_spread: 'a' constant in transaction cost function
             - nonlin_coef: 'b' constant in transaction cost function
             - power: power of change in portfolio vector used in transaction cost
+            - borrow_costs: the borrowing fee for short trades (unit-less)
             - data_dir: directory where processed historical data can be found
             - state_lookback_window: number of time-steps to include in log-rets for any one state
             - distribution: distribution from which episode start dates are drawn
             - days_duration: specifies episode duration in days
             - mode: to specify if environment will be used for training (to generate episodes) or 
-                    for backtesting (generate one long episode of variable length). mode in ['train', 'backtest']
-            - random_seed: seed used for random number generation (used for reproducablility)            
+                    for backtesting (generate one long episode of specified length). mode in ['train', 'backtest']
+            - random_seed: seed used for random number generation (used for reproducibility)            
             - init_portfolio: initial portfolio value (in USD)
             - period_in_file_name: sampling frequency of data (e.g. weekly='5d', daily='1d') 
             - nb_forecasts: number of time-steps in forecasts used as state observation (None=don't use forecasts; 1=one step ahead; 2=two steps ahead)
-            - use_CNN_state: include log-rerts window for CNN in state (True/Flase)
+            - use_CNN_state: include log-rets window for CNN in state (True/False)
             - forecast_type: to use 'strong' or 'weak' forecasts as state observations
-            - verbse: print information or not
+            - verbose: print information or not
         '''
         if verbose:
             print('creating new instance of MultiStockEnv class...')
@@ -307,6 +240,7 @@ class MultiStockEnv:
         self.cash_key = cash_key
         self.gamma_risk = gamma_risk
         self.gamma_trade = gamma_trade
+        self.gamma_hold = gamma_hold
         self.half_spread = half_spread
         self.nonlin_coef = nonlin_coef
         self.power = power
@@ -335,6 +269,7 @@ class MultiStockEnv:
         self.volume_estimate_scaled = pd.read_csv(datadir+'volume_estimate_scaled.csv.gz',index_col=0,parse_dates=[0]).dropna()
         self.sigma_estimate_scaled = pd.read_csv(datadir+'sigma_estimate_scaled.csv.gz',index_col=0,parse_dates=[0]).dropna()
         self.Sigma = self.returns.rolling(window=10, min_periods=10, closed='neither').cov().dropna()
+        self.borrow_costs = borrow_costs
 
         self.nb_forecasts = nb_forecasts
         self.forecast_type = forecast_type
@@ -411,7 +346,7 @@ class MultiStockEnv:
             start_date = datetime.datetime.strptime(self.from_date, '%Y-%m-%d').date()
             end_date = datetime.datetime.strptime(self.until, '%Y-%m-%d').date()
         else:
-            print('env.mode must be in ["train", "backtest"]')
+            print('env.mode must be in ["train", "backtest"]') #TODO replace with raising an error instead of just printing
         
         # set  episode/backtest start and end date as environment attributes
         self.episode_start_date = start_date
@@ -434,7 +369,7 @@ class MultiStockEnv:
         # reset list of previous actions
         self.prev_actions = []
         
-        # initial portfolio vector (equally weighted and fully invested as in Boyd et al.)
+        # initial portfolio vector (equally weighted and fully invested as in Boyd et al. (2017))
         w = np.ones(self.nb_assets)
         w[-1] = 0.0 # none in cash
         w /= w.sum()            
@@ -451,7 +386,8 @@ class MultiStockEnv:
     def _get_obs(self):
         '''
         return current observation (observable state)
-        this will be a tuple of tf tensors (log_rets_window, current_weight, volume_est, sigma_est)
+        this will be a tuple of tf tensors (log_rets_window, current_weight, volume_est, sigma_est) (depending on policy 
+        net used and which states are looked for)
         if no forecasts are given, or (ret_forecast, current_weight, volume_est, sigma_est) otherwise, or combination.
             - log_rets_window: window of log-returns passed to conv net
             - ret_forecast: return forecasts of one or more time-steps into the future
@@ -510,22 +446,22 @@ class MultiStockEnv:
             - increment step counter
             - get next historical price/ret
             - calculate portfolio value difference
-            - calculate reward (e.g. realised risk-adj. return after transaction cost)
+            - calculate reward (e.g. realised risk-adj. return after transaction cost and holding cost)
             - check if end of episode reached
             - populate info dict with some diagnostic info
-        return state, reward, transaction_cost, realised_rets, done, info
+        return state, reward, transaction_cost, holding_cost, realised_rets, done, info
 
-        action: portfolio vector that defines action to take for step (Numpy array)
+        action: portfolio vector that defines action to take for step (tf.tensor)
         '''
         if self.verbose:
-            print('\ttaking step in envoronment...')
+            print('\ttaking step in environment...')
 
         # calculate change in weights, transaction cost and realised returns for step
         prev_action = self.prev_actions[-1]
         delta_w = action - prev_action # both tf.tensors
-        delta_w_nc = delta_w[:-1] # withou cash. change to u_nc = w_nc @ portfolio value
+        delta_w_nc = delta_w[:-1] # without cash. change to u_nc = w_nc @ portfolio value
         
-        # transaction cost
+        # transaction cost # (unit-less)
         #transaction_cost = tf.scalar_mul( self.beta, tf.norm(delta_w, ord=1) )
         cost_first_term = self.half_spread * abs(delta_w_nc)
 
@@ -535,16 +471,23 @@ class MultiStockEnv:
                                 * ( (self.portfolio_value / time_locator(self.volumes, self.curr_time)) ** (self.power - 1) )
                               )
         cost_second_term = cost_second_term.fillna(0) # whenever volume traded is zero, second transaction cost term will be NaN, replace with zero
-        transaction_cost = sum(cost_first_term + cost_second_term)
+        transaction_cost = sum(cost_first_term + cost_second_term) # (unit-less)
+
+        # holding cost # (unit-less)
+        # TODO make holding cost for negative cash position negative as well??
+        # TODO might have to change operation functions depending on if action is numpy array or tensorflow tensor (if no errors, delete this todo)
+        # (see eq 2.4 on page 11 of Boyd et al. (2017))
+        # get negative portfolio weights in action (replace others with zero so they have no effect)
+        neg_actions = -tf.minimum(action, 0) # or for numpy: np.minimum(action, 0) 
+        holding_cost = sum( time_locator(self.borrow_costs, self.curr_time) * neg_actions )
         
-        # realised returns
-        #realised_rets = tf.tensordot(action, tf.convert_to_tensor(self.episode_rets.values[self.curr_time_step], dtype=tf.float32), axes=1) - transaction_cost 
+        # realised returns # (unit-less)
         rets = tf.tensordot(action, 
                              tf.convert_to_tensor(time_locator(self.returns, self.curr_time), dtype=tf.float32), 
                             axes=1)
-        realised_rets = rets - transaction_cost
+        realised_rets = rets - transaction_cost - holding_cost # (unit-less)
         
-        # risk function
+        # risk function (quadratic risk: w^{T} \Sigma w) # (unit-less)
         risk = tf.tensordot(tf.transpose(action), \
                              tf.tensordot(tf.convert_to_tensor(self.Sigma.loc[self.curr_time], dtype=tf.float32), 
                                           action, axes=1), axes=1)
@@ -552,11 +495,13 @@ class MultiStockEnv:
         # immediate reward
         reward = rets \
                  - (self.gamma_trade * transaction_cost) \
+                 - (self.gamma_hold * holding_cost) \
                  - (self.gamma_risk * risk)
         
         #u = delta_w * self.portfolio_value # change in portfolio (USD) excluding cash        
         rets_usd = rets * self.portfolio_value
-        transaction_cost_usd = transaction_cost*self.portfolio_value
+        transaction_cost_usd = transaction_cost * self.portfolio_value
+        holding_cost_usd = holding_cost * self.portfolio_value
 
         # append latest action to list of previous actions
         self.prev_actions.append(action)
@@ -571,6 +516,7 @@ class MultiStockEnv:
                 'reward:': reward.numpy(),
                 'rets_usd' : rets_usd.numpy(),
                 'transaction_cost_usd' : transaction_cost_usd.numpy(),
+                'holding_cost_usd' : holding_cost_usd.numpy(),
                 'portfolio_value' : self.portfolio_value.numpy(),
                 #'episode_start_date': self.episode_start_date, ############ only for diagnostics - can remove later
                 #'episode_end_date': self.episode_end_date, ############ only for diagnostics - can remove later
@@ -581,7 +527,7 @@ class MultiStockEnv:
         self.curr_time = self.episode_times[self.curr_time_step]
 
         # update portfolio value
-        self.portfolio_value += rets_usd - transaction_cost_usd
+        self.portfolio_value += rets_usd - transaction_cost_usd - holding_cost_usd
 
         # check if end of episode reached
         # done if we have run out of data
@@ -590,7 +536,7 @@ class MultiStockEnv:
         # get next state so long and set done=True if state too small (ran out of episode log-rets)
         next_state = self._get_obs()
 
-        return next_state, reward, transaction_cost, realised_rets, done, info
+        return next_state, reward, transaction_cost, holding_cost, realised_rets, done, info
 
 
 
@@ -599,15 +545,15 @@ class MultiStockEnv:
 #######################
 
 class PolicyGradientNetwork(tf.keras.Model):
-    '''policy network with CNN used to choose agent actions - specified by architechture:
+    '''policy network with CNN used to choose agent actions - specified by architecture:
         - n_assets: number assets in portfolio
         - tau: length of sliding time-window considered in conv kernel
         - lookback_window: number of timesteps included in historical log-rets window
-        - n_feature_maps: number of feature maps produced by conv lyaer
-        - dropout_rate: dropout probability after flatened layer (implement if necessary)
+        - n_feature_maps: number of feature maps produced by conv layer
+        - dropout_rate: dropout probability after flattened layer (implement if necessary)
     return model output
 
-    Note: this model will take inpits in the form: [log_rets, additional_states] as long as they match the input dimensions specified
+    Note: this model will take inputs in the form: [log_rets, additional_states] as long as they match the input dimensions specified
     '''
     def __init__(self, n_assets=12, tau=5, lookback_window=20, n_feature_maps=12):
         super(PolicyGradientNetwork, self).__init__()
@@ -634,12 +580,12 @@ class PolicyNetworkWithForecast(tf.keras.Model):
     on log-returns window for implicitly forecasting returns and covariances,
     it takes explicit returns forecasts. This is for more equal comparison to 
     Boyd's SPO/MPO models
-    policy network with explicit returns forecasts used to choose agent actions - specified by architechture:
+    policy network with explicit returns forecasts used to choose agent actions - specified by architecture:
         - n_assets: number assets in portfolio
         - n_forecast_steps: number of steps ahead given as forecast (e.g. 1 or 2)
     return model output
 
-    Note: this model will take inpits in the form: [ret_forecasts, additional_states] as long as they match the input dimensions specified
+    Note: this model will take inputs in the form: [ret_forecasts, additional_states] as long as they match the input dimensions specified
     '''
     def __init__(self, n_assets=12):#, n_forecast_steps=2):
         super(PolicyNetworkWithForecast, self).__init__()
@@ -703,9 +649,9 @@ class Agent(object):
             - n_assets: number of assets for specifying output
             - tau: length of sliding time-window considered in conv kernel that operates on historical log-rets window
             - lookback_window: number of timesteps included in historical log-rets window
-            - n_feature_maps: number of feature maps produced by conv lyaer
+            - n_feature_maps: number of feature maps produced by conv layer
             - use_forecasts: whether to use forecasts as input to policy network or not
-            - use_CNN_state: include log-rerts window for CNN in state (True/Flase)
+            - use_CNN_state: include log-rets window for CNN in state (True/False)
         '''
         self.gamma = gamma
         self.alpha = alpha
@@ -714,6 +660,7 @@ class Agent(object):
         self.action_memory = [] # for recording trajectory through episode
         self.reward_memory = [] # for recording trajectory through episode
         self.trans_cost_memory = [] # for recording trajectory through episode
+        self.holding_cost_memory = [] # for recording trajectory through episode
         self.relised_ret_memory = [] # for keeping track of realised returns (after transaction cost)
         self.use_forecasts = use_forecasts # whether to use forecasts as input to policy network or not
         self.use_CNN_state = use_CNN_state
@@ -743,13 +690,13 @@ class Agent(object):
     def choose_action(self, state):
         '''
         returns an action (portfolio vector) as a tf tensor based in some input state made up of 
-        a historical log-rets window and additional states such as the curent 
+        a historical log-rets window and additional states such as the current 
         portfolio vector (previous action)
         '''
         return self.policy(state)
 
 
-    def store_transition(self, state, action, reward, transaction_cost, realised_rets):
+    def store_transition(self, state, action, reward, transaction_cost, holding_cost, realised_rets):
         '''
         append state, action, immediate reward, transaction_cost, and realised_rets to memory of current episode
         this represents the trajectory from which G will be calculated later
@@ -758,6 +705,7 @@ class Agent(object):
         self.action_memory.append(action) # list of tensors
         self.reward_memory.append(reward) # list of tensors
         self.trans_cost_memory.append(transaction_cost)
+        self.holding_cost_memory.append(holding_cost)
         self.relised_ret_memory.append(realised_rets)
 
 
@@ -770,12 +718,14 @@ class Agent(object):
             - action_memory, 
             - state_memory, 
             - trans_cost_memory
+            - holding_cost_memory
         this should be done at the end of each episode to prevent endless appending to memory lists
         '''
         self.state_memory = []
         self.action_memory = []
         self.reward_memory = []
         self.trans_cost_memory = []
+        self.holding_cost_memory = []
         self.relised_ret_memory = []
 
     def get_memory(self):
@@ -787,15 +737,16 @@ class Agent(object):
             - action_memory, 
             - state_memory, 
             - trans_cost_memory
+            - holding_cost_memory
         this memory is returned as a tuple and should be done before mini-batch training 
         in online learning
         '''
-        return (self.state_memory, self.action_memory, self.reward_memory, self.trans_cost_memory, self.relised_ret_memory)
+        return (self.state_memory, self.action_memory, self.reward_memory, self.trans_cost_memory, self.holding_cost_memory, self.relised_ret_memory)
 
 
     def load(self, file_name):
         '''
-        load model weights from previousy saved file
+        load model weights from previously saved file
         '''
         self.policy.load_weights(file_name)
         #self.policy.load_model(file_name)
