@@ -42,7 +42,7 @@ HALF_SPREAD = 0.0005/2.0 # 'a' in transaction cost function
 NONLIN_COEFF = 1.0 # 'b' transaction cost function
 POWER = 1.5 # power for change in poertfolio vector used in transaction cost
 BORROW_COST = 0.0001 # the borrowing fee for short trades (page 58 of Boyd et al. (2017))
-GAMMA_RISK, GAMMA_TRADE, GAMMA_HOLD = 18, 6.5, 0.0 # relative importance of risk, trading cost, and holding cost #TODO GAMMA_HOLD never used below
+GAMMA_RISK, GAMMA_TRADE, GAMMA_HOLD = 18, 6.5, 0.1 # relative importance of risk, trading cost, and holding cost
 INIT_PORTFOLIO = 100000000.0 # initial portfolio value
 model_name = f'REINFORCE_Soft_{UNTIL}' # give model a name to distinguish saved files
 #NB_EPISODES = 300 #2000
@@ -240,6 +240,7 @@ class MultiStockEnv:
         self.cash_key = cash_key
         self.gamma_risk = gamma_risk
         self.gamma_trade = gamma_trade
+        self.gamma_hold = gamma_hold
         self.half_spread = half_spread
         self.nonlin_coef = nonlin_coef
         self.power = power
