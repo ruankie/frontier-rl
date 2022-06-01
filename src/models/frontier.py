@@ -41,6 +41,7 @@ EPISODE_DRAW_DISTRIBUTION = 'uniform' # or geometric. select starting point of e
 HALF_SPREAD = 0.0005/2.0 # 'a' in transaction cost function
 NONLIN_COEFF = 1.0 # 'b' transaction cost function
 POWER = 1.5 # power for change in poertfolio vector used in transaction cost
+BORROW_COST = 0.05 # the borrowing fee for short trades (unit-less) # TODO check value - replace by different value later (check what they used in Boyd et al. (2017))
 GAMMA_RISK, GAMMA_TRADE, GAMMA_HOLD = 18, 6.5, 0.0 # relative importance of risk, trading cost, and holding cost #TODO GAMMA_HOLD never used below
 INIT_PORTFOLIO = 100000000.0 # initial portfolio value
 model_name = f'REINFORCE_Soft_{UNTIL}' # give model a name to distinguish saved files
@@ -117,8 +118,8 @@ def play_one_episode(agent, env, mode='train'):
         # get episode trajectory
         while not done:
             action = agent.choose_action(state)
-            next_state, reward, transaction_cost, realised_rets, done, info = env.step(action) #TODO add holding cost?
-            agent.store_transition(state, action, reward, transaction_cost, realised_rets) #TODO add holding cost?
+            next_state, reward, transaction_cost, holding_cost, realised_rets, done, info = env.step(action)
+            agent.store_transition(state, action, reward, transaction_cost, holding_cost, realised_rets)
             state = next_state
 
         # notify when done creating episode trajectory
@@ -169,8 +170,8 @@ def backtest(agent, env, weights_file_dir=None, verbose=False):
     # get backtest trajectory
     while not done:
         action = agent.choose_action(state)
-        next_state, reward, transaction_cost, realised_rets, done, info = env.step(action) #TODO add holding cost? (be consistent with play_one_episode() function above!)
-        agent.store_transition(state, action, reward, transaction_cost, realised_rets) #TODO add holding cost? (be consistent with play_one_episode() function above!)
+        next_state, reward, transaction_cost, holding_cost, realised_rets, done, info = env.step(action)
+        agent.store_transition(state, action, reward, transaction_cost, holding_cost, realised_rets)
         state = next_state
 
     if verbose:
@@ -195,8 +196,8 @@ class MultiStockEnv:
     Action: actions will be portfolio vectors of shape (nb_assets,)
     """
     def __init__(self, tickers=TICKERS, from_date=FROM, until=UNTIL, #nb_episodes=100, 
-                 cash_key='USDOLLAR', gamma_risk=GAMMA_RISK, gamma_trade=GAMMA_TRADE, #TODO add GAMMA_HOLD
-                 half_spread=HALF_SPREAD, nonlin_coef=NONLIN_COEFF, power=POWER,
+                 cash_key='USDOLLAR', gamma_risk=GAMMA_RISK, gamma_trade=GAMMA_TRADE, gamma_hold=GAMMA_HOLD,
+                 half_spread=HALF_SPREAD, nonlin_coef=NONLIN_COEFF, power=POWER, borrow_costs=BORROW_COST,
                  datadir='../../data/processed_data/', 
                  state_lookback_window=20, distribution=EPISODE_DRAW_DISTRIBUTION,
                  days_duration=DAYS_IN_EPISODE, mode='train', random_seed=RANDOM_SEED,
@@ -208,10 +209,12 @@ class MultiStockEnv:
             - until: end date of backtests, get data for assets only until this point in time (e.g. '2021-01-01')
             - cash_key: key used in data for rik-free asset
             - gamma_risk: scaling factor for relative importance of risk (risk aversion parameter)
-            - gamma_trade: scaling factor for relative importance of trade cost in reward function #TODO add gamma_hold
+            - gamma_trade: scaling factor for relative importance of trade cost in reward function
+            - gamma_hold: scaling factor for relative importance of holding cost in reward function
             - half_spread: 'a' constant in transaction cost function
             - nonlin_coef: 'b' constant in transaction cost function
             - power: power of change in portfolio vector used in transaction cost
+            - borrow_costs: the borrowing fee for short trades (unit-less)
             - data_dir: directory where processed historical data can be found
             - state_lookback_window: number of time-steps to include in log-rets for any one state
             - distribution: distribution from which episode start dates are drawn
@@ -265,7 +268,7 @@ class MultiStockEnv:
         self.volume_estimate_scaled = pd.read_csv(datadir+'volume_estimate_scaled.csv.gz',index_col=0,parse_dates=[0]).dropna()
         self.sigma_estimate_scaled = pd.read_csv(datadir+'sigma_estimate_scaled.csv.gz',index_col=0,parse_dates=[0]).dropna()
         self.Sigma = self.returns.rolling(window=10, min_periods=10, closed='neither').cov().dropna()
-        # TODO add self.borrow_costs (can even be scalar) - also add to docstring
+        self.borrow_costs = borrow_costs
 
         self.nb_forecasts = nb_forecasts
         self.forecast_type = forecast_type
@@ -442,12 +445,12 @@ class MultiStockEnv:
             - increment step counter
             - get next historical price/ret
             - calculate portfolio value difference
-            - calculate reward (e.g. realised risk-adj. return after transaction cost) #TODO and holding cost
+            - calculate reward (e.g. realised risk-adj. return after transaction cost and holding cost)
             - check if end of episode reached
             - populate info dict with some diagnostic info
-        return state, reward, transaction_cost, realised_rets, done, info #TODO and holding cost?
+        return state, reward, transaction_cost, holding_cost, realised_rets, done, info
 
-        action: portfolio vector that defines action to take for step (Numpy array) #TODO check: might be tf.tensor not np.array
+        action: portfolio vector that defines action to take for step (tf.tensor)
         '''
         if self.verbose:
             print('\ttaking step in environment...')
@@ -469,20 +472,19 @@ class MultiStockEnv:
         cost_second_term = cost_second_term.fillna(0) # whenever volume traded is zero, second transaction cost term will be NaN, replace with zero
         transaction_cost = sum(cost_first_term + cost_second_term) # (unit-less)
 
-        # TODO add holding cost here: # (unit-less)
+        # holding cost # (unit-less)
         # TODO make holding cost for negative cash position negative as well??
-        # TODO change operation functions depending on if action is numpy array or tensorflow tensor!!!!
-        # # (see eq 2.4 on page 11 of Boyd et al. (2017))
-        # # get negative portfolio weights in action (replace others with zero so they have no effect, maybe also make cash asset zero to ignore?)
-        # neg_actions = tf.minimum(action, 0) # or for numpy: np.minimum(action, 0) 
-        # holding_cost = sum( time_locator(self.borrow_costs, self.curr_time) * neg_actions )
+        # TODO might have to change operation functions depending on if action is numpy array or tensorflow tensor (if no errors, delete this todo)
+        # (see eq 2.4 on page 11 of Boyd et al. (2017))
+        # get negative portfolio weights in action (replace others with zero so they have no effect)
+        neg_actions = tf.minimum(action, 0) # or for numpy: np.minimum(action, 0) 
+        holding_cost = sum( time_locator(self.borrow_costs, self.curr_time) * neg_actions )
         
         # realised returns # (unit-less)
-        #realised_rets = tf.tensordot(action, tf.convert_to_tensor(self.episode_rets.values[self.curr_time_step], dtype=tf.float32), axes=1) - transaction_cost 
         rets = tf.tensordot(action, 
                              tf.convert_to_tensor(time_locator(self.returns, self.curr_time), dtype=tf.float32), 
                             axes=1)
-        realised_rets = rets - transaction_cost #TODO - holding_cost -- subtract holding cost here # (unit-less)
+        realised_rets = rets - transaction_cost - holding_cost # (unit-less)
         
         # risk function (quadratic risk: w^{T} \Sigma w) # (unit-less)
         risk = tf.tensordot(tf.transpose(action), \
@@ -492,13 +494,13 @@ class MultiStockEnv:
         # immediate reward
         reward = rets \
                  - (self.gamma_trade * transaction_cost) \
+                 - (self.gamma_hold * holding_cost) \
                  - (self.gamma_risk * risk)
-                 #TODO subtract scaled holding cost here: - (self.gamma_hold * holding_cost)
         
         #u = delta_w * self.portfolio_value # change in portfolio (USD) excluding cash        
         rets_usd = rets * self.portfolio_value
-        transaction_cost_usd = transaction_cost*self.portfolio_value
-        # TODO add holding_cost_usd = holding_cost*self.portfolio_value
+        transaction_cost_usd = transaction_cost * self.portfolio_value
+        holding_cost_usd = holding_cost * self.portfolio_value
 
         # append latest action to list of previous actions
         self.prev_actions.append(action)
@@ -513,7 +515,7 @@ class MultiStockEnv:
                 'reward:': reward.numpy(),
                 'rets_usd' : rets_usd.numpy(),
                 'transaction_cost_usd' : transaction_cost_usd.numpy(),
-                # TODO add 'holding_cost_usd' : holding_cost_usd.numpy(),
+                'holding_cost_usd' : holding_cost_usd.numpy(),
                 'portfolio_value' : self.portfolio_value.numpy(),
                 #'episode_start_date': self.episode_start_date, ############ only for diagnostics - can remove later
                 #'episode_end_date': self.episode_end_date, ############ only for diagnostics - can remove later
@@ -524,7 +526,7 @@ class MultiStockEnv:
         self.curr_time = self.episode_times[self.curr_time_step]
 
         # update portfolio value
-        self.portfolio_value += rets_usd - transaction_cost_usd # TODO: - holding_cost_usd
+        self.portfolio_value += rets_usd - transaction_cost_usd - holding_cost_usd
 
         # check if end of episode reached
         # done if we have run out of data
@@ -533,7 +535,7 @@ class MultiStockEnv:
         # get next state so long and set done=True if state too small (ran out of episode log-rets)
         next_state = self._get_obs()
 
-        return next_state, reward, transaction_cost, realised_rets, done, info # TODO add holding_cost
+        return next_state, reward, transaction_cost, holding_cost, realised_rets, done, info
 
 
 
@@ -657,6 +659,7 @@ class Agent(object):
         self.action_memory = [] # for recording trajectory through episode
         self.reward_memory = [] # for recording trajectory through episode
         self.trans_cost_memory = [] # for recording trajectory through episode
+        self.holding_cost_memory = [] # for recording trajectory through episode
         self.relised_ret_memory = [] # for keeping track of realised returns (after transaction cost)
         self.use_forecasts = use_forecasts # whether to use forecasts as input to policy network or not
         self.use_CNN_state = use_CNN_state
@@ -692,7 +695,7 @@ class Agent(object):
         return self.policy(state)
 
 
-    def store_transition(self, state, action, reward, transaction_cost, realised_rets):
+    def store_transition(self, state, action, reward, transaction_cost, holding_cost, realised_rets):
         '''
         append state, action, immediate reward, transaction_cost, and realised_rets to memory of current episode
         this represents the trajectory from which G will be calculated later
@@ -701,6 +704,7 @@ class Agent(object):
         self.action_memory.append(action) # list of tensors
         self.reward_memory.append(reward) # list of tensors
         self.trans_cost_memory.append(transaction_cost)
+        self.holding_cost_memory.append(holding_cost)
         self.relised_ret_memory.append(realised_rets)
 
 
@@ -713,12 +717,14 @@ class Agent(object):
             - action_memory, 
             - state_memory, 
             - trans_cost_memory
+            - holding_cost_memory
         this should be done at the end of each episode to prevent endless appending to memory lists
         '''
         self.state_memory = []
         self.action_memory = []
         self.reward_memory = []
         self.trans_cost_memory = []
+        self.holding_cost_memory = []
         self.relised_ret_memory = []
 
     def get_memory(self):
@@ -730,10 +736,11 @@ class Agent(object):
             - action_memory, 
             - state_memory, 
             - trans_cost_memory
+            - holding_cost_memory
         this memory is returned as a tuple and should be done before mini-batch training 
         in online learning
         '''
-        return (self.state_memory, self.action_memory, self.reward_memory, self.trans_cost_memory, self.relised_ret_memory)
+        return (self.state_memory, self.action_memory, self.reward_memory, self.trans_cost_memory, self.holding_cost_memory, self.relised_ret_memory)
 
 
     def load(self, file_name):
