@@ -477,7 +477,7 @@ class MultiStockEnv:
         # TODO might have to change operation functions depending on if action is numpy array or tensorflow tensor (if no errors, delete this todo)
         # (see eq 2.4 on page 11 of Boyd et al. (2017))
         # get negative portfolio weights in action (replace others with zero so they have no effect)
-        neg_actions = tf.minimum(action, 0) # or for numpy: np.minimum(action, 0) 
+        neg_actions = -tf.minimum(action, 0) # or for numpy: np.minimum(action, 0) 
         holding_cost = sum( time_locator(self.borrow_costs, self.curr_time) * neg_actions )
         
         # realised returns # (unit-less)
