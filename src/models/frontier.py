@@ -27,8 +27,8 @@ import os
 #################
 ### constants ###
 #################
-# top 12 US stocks screeded for highest 50-day average volume traded on 04-05-2018 and filtered as in Boyd (alphabetical order):
-# ['AAPL', 'AMD', 'BAC', 'CMCSA', 'CSCO', 'F', 'GE', 'INTC', 'MSFT', 'MU', 'PFE', 'T'] - remove 'PFE' fot top 11
+# top 12 US stocks screened for highest 50-day average volume traded on 04-05-2018 and filtered as in Boyd (alphabetical order):
+# ['AAPL', 'AMD', 'BAC', 'CMCSA', 'CSCO', 'F', 'GE', 'INTC', 'MSFT', 'MU', 'PFE', 'T'] - remove 'PFE' for top 11
 TICKERS = ['AAPL', 'AMD', 'BAC', 'CMCSA', 'CSCO', 'F', 'GE', 'INTC', 'MSFT', 'MU', 'T']
 FILE_PERIOD = '1d' # weekly='5d', daily='1d'
 #DF_PERIOD = 'D' # weekly='W', daily='D'
@@ -93,18 +93,18 @@ def maybe_make_dir(directory):
 def play_one_episode(agent, env, mode='train'):
     '''play through one episode
         agent: the agent object that interacts with the environment
-        env: the envoronment object
+        env: the environment object
         mode: select training or testing mode
 
-    resets the env by drawing a ranom episode and clearing all tracking variables
+    resets the env by drawing a random episode and clearing all tracking variables
         - draw random episode
         - reset to start of episode
-        - set done flag to Flase
+        - set done flag to False
         - for each time-step in episode:
             - agent selects action
             - perform action and get next_state, reward, transaction cost, realised returns, info from environment
             - store transition in agent memory
-        - after getting trajecory through episode, calculate G
+        - after getting trajectory through episode, calculate G
         - update actor weights/parameters with gradient ascent
     '''
     with tf.GradientTape() as tape:
@@ -155,10 +155,10 @@ def backtest(agent, env, weights_file_dir=None, verbose=False):
     '''returns realised returns of the agent in the environment for backtest period.
         - agent: agent that will be used for backtest
         - env: environment that agent will interact with during backtest. remember to setup env in a 'backtest' mode
-        - weights_file_dir: file path that contains saved model weights for policy network, keep None for ranom agent
+        - weights_file_dir: file path that contains saved model weights for policy network, keep None for random agent
         - verbose: print what happens or not
     Note: the agent specified by the saved weights must have used the same investor preferences, 
-            lookback window (tau), and assets as the backtest!
+            look-back window (tau), and assets as the backtest!
     '''# load model weights
     if verbose:
         print(f'loading agent weights from {weights_file_dir}...')
@@ -190,14 +190,14 @@ def backtest(agent, env, weights_file_dir=None, verbose=False):
 def backtest_online(agent, env, weights_file_dir=None, verbose=False):
     ''' NEEDS REFINING - DOES NOT WORK!
     returns realised returns of the agent in the environment for backtest period. This is a slightly different version
-    of the normal backtest function where online stochastic batch learning is incorporated. After each trade, model will be opdated on 
-    randomle selected episode from geometric distribution.
+    of the normal backtest function where online stochastic batch learning is incorporated. After each trade, model will be updated on 
+    randomly selected episode from geometric distribution.
         - agent: agent that will be used for backtest
         - env: environment that agent will interact with during backtest. remember to setup env in a 'backtest' mode
-        - weights_file_dir: file path that contains saved model weights for policy network, keep None for ranom agent
+        - weights_file_dir: file path that contains saved model weights for policy network, keep None for random agent
         - verbose: print what happens or not
     Note: the agent specified by the saved weights must have used the same investor preferences, 
-            lookback window (tau), and assets as the backtest!
+            look-back window (tau), and assets as the backtest!
     '''# load model weights
     if verbose:
         print(f'loading agent weights from {weights_file_dir}...') # pre-trained weights from uniformly sampled episodes before backtest
@@ -262,7 +262,7 @@ class MultiStockEnv:
             later on this might include fundamentals and technical indicators
     Action: actions will be portfolio vectors of shape (nb_assets,)
     """
-    # top 11 US stocks screeded for highest 50-day average volume traded on 04-05-2018:
+    # top 11 US stocks screened for highest 50-day average volume traded on 04-05-2018:
     # ['AAPL', 'AMD', 'BAC', 'CMCSA', 'CSCO', 'F', 'GE', 'INTC', 'MSFT', 'MU', 'T']
     def __init__(self, tickers=TICKERS, from_date=FROM, until=UNTIL, #nb_episodes=100, 
                  cash_key='USDOLLAR', gamma_risk=GAMMA_RISK, gamma_trade=GAMMA_TRADE,
@@ -274,9 +274,9 @@ class MultiStockEnv:
                  nb_forecasts=None, forecast_type='strong', use_CNN_state=False, verbose=False):
         '''initialise environment
             - tickers: ticker symbols of assets in portfolio
-            - from_date: use when backtesting to specify start date of backtest (e.g. '2018-01-01'), otherwilse leave as None
+            - from_date: use when backtesting to specify start date of backtest (e.g. '2018-01-01'), otherwise leave as None
             - until: end date of backtests, get data for assets only until this point in time (e.g. '2021-01-01')
-            - cash_key: key used in data for riks-free asset
+            - cash_key: key used in data for rik-free asset
             - gamma_risk: scaling factor for relative importance of risk (risk aversion parameter)
             - gamma_trade: scaling factor for relative importance of trade cost in reward function
             - half_spread: 'a' constant in transaction cost function
@@ -288,13 +288,13 @@ class MultiStockEnv:
             - days_duration: specifies episode duration in days
             - mode: to specify if environment will be used for training (to generate episodes) or 
                     for backtesting (generate one long episode of variable length). mode in ['train', 'backtest']
-            - random_seed: seed used for random number generation (used for reproducablility)            
+            - random_seed: seed used for random number generation (used for reproducibility)            
             - init_portfolio: initial portfolio value (in USD)
             - period_in_file_name: sampling frequency of data (e.g. weekly='5d', daily='1d') 
             - nb_forecasts: number of time-steps in forecasts used as state observation (None=don't use forecasts; 1=one step ahead; 2=two steps ahead)
-            - use_CNN_state: include log-rerts window for CNN in state (True/Flase)
+            - use_CNN_state: include log-rets window for CNN in state (True/False)
             - forecast_type: to use 'strong' or 'weak' forecasts as state observations
-            - verbse: print information or not
+            - verbose: print information or not
         '''
         if verbose:
             print('creating new instance of MultiStockEnv class...')
@@ -518,7 +518,7 @@ class MultiStockEnv:
         action: portfolio vector that defines action to take for step (Numpy array)
         '''
         if self.verbose:
-            print('\ttaking step in envoronment...')
+            print('\ttaking step in environment...')
 
         # calculate change in weights, transaction cost and realised returns for step
         prev_action = self.prev_actions[-1]
@@ -599,15 +599,15 @@ class MultiStockEnv:
 #######################
 
 class PolicyGradientNetwork(tf.keras.Model):
-    '''policy network with CNN used to choose agent actions - specified by architechture:
+    '''policy network with CNN used to choose agent actions - specified by architecture:
         - n_assets: number assets in portfolio
         - tau: length of sliding time-window considered in conv kernel
         - lookback_window: number of timesteps included in historical log-rets window
-        - n_feature_maps: number of feature maps produced by conv lyaer
-        - dropout_rate: dropout probability after flatened layer (implement if necessary)
+        - n_feature_maps: number of feature maps produced by conv layer
+        - dropout_rate: dropout probability after flattened layer (implement if necessary)
     return model output
 
-    Note: this model will take inpits in the form: [log_rets, additional_states] as long as they match the input dimensions specified
+    Note: this model will take inputs in the form: [log_rets, additional_states] as long as they match the input dimensions specified
     '''
     def __init__(self, n_assets=12, tau=5, lookback_window=20, n_feature_maps=12):
         super(PolicyGradientNetwork, self).__init__()
@@ -634,12 +634,12 @@ class PolicyNetworkWithForecast(tf.keras.Model):
     on log-returns window for implicitly forecasting returns and covariances,
     it takes explicit returns forecasts. This is for more equal comparison to 
     Boyd's SPO/MPO models
-    policy network with explicit returns forecasts used to choose agent actions - specified by architechture:
+    policy network with explicit returns forecasts used to choose agent actions - specified by architecture:
         - n_assets: number assets in portfolio
         - n_forecast_steps: number of steps ahead given as forecast (e.g. 1 or 2)
     return model output
 
-    Note: this model will take inpits in the form: [ret_forecasts, additional_states] as long as they match the input dimensions specified
+    Note: this model will take inputs in the form: [ret_forecasts, additional_states] as long as they match the input dimensions specified
     '''
     def __init__(self, n_assets=12):#, n_forecast_steps=2):
         super(PolicyNetworkWithForecast, self).__init__()
@@ -703,9 +703,9 @@ class Agent(object):
             - n_assets: number of assets for specifying output
             - tau: length of sliding time-window considered in conv kernel that operates on historical log-rets window
             - lookback_window: number of timesteps included in historical log-rets window
-            - n_feature_maps: number of feature maps produced by conv lyaer
+            - n_feature_maps: number of feature maps produced by conv layer
             - use_forecasts: whether to use forecasts as input to policy network or not
-            - use_CNN_state: include log-rerts window for CNN in state (True/Flase)
+            - use_CNN_state: include log-rets window for CNN in state (True/False)
         '''
         self.gamma = gamma
         self.alpha = alpha
@@ -743,7 +743,7 @@ class Agent(object):
     def choose_action(self, state):
         '''
         returns an action (portfolio vector) as a tf tensor based in some input state made up of 
-        a historical log-rets window and additional states such as the curent 
+        a historical log-rets window and additional states such as the current 
         portfolio vector (previous action)
         '''
         return self.policy(state)
@@ -795,7 +795,7 @@ class Agent(object):
 
     def load(self, file_name):
         '''
-        load model weights from previousy saved file
+        load model weights from previously saved file
         '''
         self.policy.load_weights(file_name)
         #self.policy.load_model(file_name)
