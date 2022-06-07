@@ -544,6 +544,38 @@ class MultiStockEnv:
 ### policy networks ###
 #######################
 
+class LongShortCNNPolicy(tf.keras.Model):
+    '''Same as original CNN network but allows short positions: policy network with CNN used to choose agent 
+        actions - specified by architecture:
+        - n_assets: number assets in portfolio
+        - tau: length of sliding time-window considered in conv kernel
+        - lookback_window: number of timesteps included in historical log-rets window
+        - n_feature_maps: number of feature maps produced by conv layer
+        - dropout_rate: dropout probability after flattened layer (implement if necessary)
+    return model output
+
+    Note: this model will take inputs in the form: [log_rets, additional_states] as long as they match the input dimensions specified
+    '''
+    def __init__(self, n_assets=12, tau=5, lookback_window=20):
+        super(PolicyGradientNetwork, self).__init__()
+        self.conv = Conv2D(n_assets, (n_assets,tau), activation='relu', input_shape=(1, n_assets, lookback_window, 1), data_format='channels_last')
+        self.flatten = Flatten()
+        self.concat = Concatenate()
+        self.dense = Dense(3*n_assets, activation='relu')
+        self.long_short = Dense(n_assets, activation='tanh')
+
+    def call(self, state):
+        log_rets_window = tf.expand_dims([tf.transpose(state[0])], axis=-1) # transpose and add batch dim
+        additional_inputs = tf.expand_dims( self.concat(state[1:]), 0) # concatente addtional inputs and add batch dim
+        x = self.conv(log_rets_window)
+        x = self.flatten(x)
+        x = self.concat([x, additional_inputs])
+        x = self.dense(x)
+        x = self.long_short(x) # output weights between -1 and 1
+        x = x / x.sum() # ensure weights add to 1
+        return tf.squeeze(x)
+
+
 class PolicyGradientNetwork(tf.keras.Model):
     '''policy network with CNN used to choose agent actions - specified by architecture:
         - n_assets: number assets in portfolio
@@ -639,9 +671,10 @@ class PolicyNetworkWithAllInputs(tf.keras.Model):
 ### agent ###
 #############
 
+# TODO: better specification of policy network - remove all if-else statements and pass policy object at init
 class Agent(object):
     def __init__(self, alpha=0.001, gamma=0.99, n_assets=12, tau=5, lookback_window=20, 
-                 n_feature_maps=12, use_forecasts=False, use_CNN_state=False):#, dropout_rate=0.2):
+                 n_feature_maps=12, use_forecasts=False, use_CNN_state=False, allow_long_short_trades=True):#, dropout_rate=0.2):
         '''
         initialise agent with policy network for choosing actions
             - alpha: learning rate
@@ -664,6 +697,13 @@ class Agent(object):
         self.relised_ret_memory = [] # for keeping track of realised returns (after transaction cost)
         self.use_forecasts = use_forecasts # whether to use forecasts as input to policy network or not
         self.use_CNN_state = use_CNN_state
+
+        # allow long and short trades (same as original CNN policy network with different activation function)
+        if allow_long_short_trades:
+            self.policy = LongShortCNNPolicy(n_assets=n_assets, 
+                                            tau=tau, 
+                                            lookback_window=lookback_window)
+
             
         # only log-rets for CNN
         if (self.use_CNN_state) and (not self.use_forecasts):
