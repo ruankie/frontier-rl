@@ -555,6 +555,7 @@ class LongShortCNNPolicy(tf.keras.Model):
     return model output
 
     Note: this model will take inputs in the form: [log_rets, additional_states] as long as they match the input dimensions specified
+    TODO: add long-only constraint to cash position - currently all assets can be long or short
     '''
     def __init__(self, n_assets=12, tau=5, lookback_window=20):
         super(LongShortCNNPolicy, self).__init__()
