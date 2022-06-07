@@ -575,7 +575,8 @@ class LongShortCNNPolicy(tf.keras.Model):
         #print(f'{"-"*10}\ndense x:\n\n{x}\n{"-"*10}\n\tshape: {x.shape}')
         x = self.long_short(x) # output weights between -1 and 1
         #print(f'{"-"*10}\nlong_short x:\n\n{x}\n{"-"*10}\n\tshape: {x.shape}')
-        x = x / x.sum() # ensure weights add to 1
+        x = x / tf.math.reduce_sum(x) # ensure weights add to 1
+        #print(f'{"-"*10}\nnormalised x:\n\n{x}\n{"-"*10}\n\tshape: {x.shape}')
         return tf.squeeze(x)
 
 
