@@ -557,7 +557,7 @@ class LongShortCNNPolicy(tf.keras.Model):
     Note: this model will take inputs in the form: [log_rets, additional_states] as long as they match the input dimensions specified
     '''
     def __init__(self, n_assets=12, tau=5, lookback_window=20):
-        super(PolicyGradientNetwork, self).__init__()
+        super(LongShortCNNPolicy, self).__init__()
         self.conv = Conv2D(n_assets, (n_assets,tau), activation='relu', input_shape=(1, n_assets, lookback_window, 1), data_format='channels_last')
         self.flatten = Flatten()
         self.concat = Concatenate()
@@ -571,7 +571,9 @@ class LongShortCNNPolicy(tf.keras.Model):
         x = self.flatten(x)
         x = self.concat([x, additional_inputs])
         x = self.dense(x)
+        #print(f'{"-"*10}\ndense x:\n\n{x}\n{"-"*10}\n\tshape: {x.shape}')
         x = self.long_short(x) # output weights between -1 and 1
+        #print(f'{"-"*10}\nlong_short x:\n\n{x}\n{"-"*10}\n\tshape: {x.shape}')
         x = x / x.sum() # ensure weights add to 1
         return tf.squeeze(x)
 
