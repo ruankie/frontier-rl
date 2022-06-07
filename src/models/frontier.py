@@ -700,16 +700,15 @@ class Agent(object):
         self.relised_ret_memory = [] # for keeping track of realised returns (after transaction cost)
         self.use_forecasts = use_forecasts # whether to use forecasts as input to policy network or not
         self.use_CNN_state = use_CNN_state
+        self.allow_long_short_trades = allow_long_short_trades
 
         # allow long and short trades (same as original CNN policy network with different activation function)
-        if allow_long_short_trades:
+        if self.allow_long_short_trades:
             self.policy = LongShortCNNPolicy(n_assets=n_assets, 
                                             tau=tau, 
-                                            lookback_window=lookback_window)
-
-            
+                                            lookback_window=lookback_window)            
         # only log-rets for CNN
-        if (self.use_CNN_state) and (not self.use_forecasts):
+        elif (self.use_CNN_state) and (not self.use_forecasts):
             self.policy = PolicyGradientNetwork(n_assets=n_assets, 
                                                 tau=tau, 
                                                 lookback_window=lookback_window, 
