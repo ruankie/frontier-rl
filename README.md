@@ -22,9 +22,9 @@ FRONTIER is a deep reinforcement learning model for portfolio management that ta
 - [x] Add data folders containing market data
 - [x] Set up containerised development environment to easily reproduce results
 - [x] Set up Discord server for project
-- [ ] Add other paper authors as repo contributors (in progress)
+- [x] Add other paper authors as repo contributors (in progress)
     - [x] Add Prof. van Zyl
-    - [ ] Add Andrew
+    - [x] Add Andrew
 - [x] Run simple test on small portfolio (5 assets) to see if containerised environment setup works properly
     - [x] Training of RL models with CNN policy network
     - [x] Backtesting trained RL models with CNN policy network
