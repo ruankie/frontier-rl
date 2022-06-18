@@ -21,6 +21,8 @@ FRONTIER is a deep reinforcement learning model for portfolio management that ta
 - [x] Add code from original study
 - [x] Add data folders containing market data
 - [x] Set up containerised development environment to easily reproduce results
+    - [x] Fore development with VS Code through the `Remote-Containers` extension
+    - [ ] For remote development with Jupyter Lab through jupyter server in container
 - [x] Set up Discord server for project
 - [x] Add other paper authors as repo contributors (in progress)
     - [x] Add Prof. van Zyl
