@@ -1,0 +1,17 @@
+version: '3.3'
+services:
+  jupyter:
+    platform: linux/x86_64
+    build:
+      context: ..
+      dockerfile: ./.devcontainer/Dockerfile
+    volumes:
+     - type : bind
+       source: ../
+       target: /app/
+    hostname:
+        frontier
+    ports:
+      - "10000:10000"
+    command:  jupyter lab --notebook-dir=/app --ip="0.0.0.0" --port=10000 --no-browser --allow-root
+    container_name: frontier
