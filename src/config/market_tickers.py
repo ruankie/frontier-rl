@@ -1,5 +1,8 @@
 # these are mostly from FinRL/FinRL-Library/finrl/apps/config.py
 
+# smallest set of tickers for quick testing
+TEST_5_TICKER = ['AAPL', 'AMD', 'CSCO', 'F', 'INTC']
+
 #subset of 11 S&P500 stocks screeded for highest 50-day average volume traded on 04-05-2018 (in alphabetical order)
 SP_11_TICKER = ['AAPL', 'AMD', 'BAC', 'CMCSA', 'CSCO', 'F', 'GE', 'INTC', 'MSFT', 'MU', 'T']
 
