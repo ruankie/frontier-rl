@@ -14,10 +14,11 @@ def split_gammas(all_gammas, n):
     return tuple(gammas_sub_lists)
 
 
-def reproduce_backtest(market_name, from_date, until_date, model_name, constraint_name, gamma_triples):
+def train_rl(seeds, market_name, tickers, model_base_name, from_date, until_date, 
+            gamma_trades, gamma_risks, gamma_holds, nb_episodes, save_every):
 
     assert market_name in ['TEST_5', 'SP_11', 'DOW_30','NIK_25','LA_40', 'SP_500'], 'must choose a valid market name (or update valid list in assertion).'
-    assert model_name in ['SPO', 'MPO'], 'must choose a valid model base name ("SPO" or "MPO").'
+    assert model_name in ['RL_CNN','RL_str_fcast','RL_all_inp'], 'must choose a valid model base name: "RL_CNN","RL_str_fcast", or "RL_all_inp".'
 
     start = time.time()
     print(f'\tstarting {model_base_name} on {market_name} [{from_date} - {until_date}] with seeds {seeds}.')
@@ -33,6 +34,9 @@ def reproduce_backtest(market_name, from_date, until_date, model_name, constrain
                                 'UNTIL':until_date,
                                 'NB_EPISODES':nb_episodes,
                                 'SAVE_EVERY':save_every,
+                                'GAMMA_TRADES':gamma_trades,
+                                'GAMMA_RISKS':gamma_risks,
+                                'GAMMA_HOLDS':gamma_holds
                                },
                     progress_bar=True,
                    )
@@ -55,6 +59,9 @@ if __name__ == '__main__':
     nb_episodes = config['NB_EPISODES']
     save_every = config['SAVE_EVERY']
     all_markets = config['MARKETS']
+    gamma_trades = config['GAMMA_TRADES']
+    gamma_risks = config['GAMMA_RISKS']
+    gamma_holds = config['GAMMA_HOLDS']
     nb_workers = config['NB_WORKERS']
     if nb_workers == -1:
         nb_workers = cpu_count()    
@@ -63,19 +70,29 @@ if __name__ == '__main__':
     # min amount of workers
     min_workers = len(all_base_names)*len(all_markets) # models * markets = 9
     assert min_workers<=nb_workers, f"number of workers = {nb_workers}. must be greater or equal to (models*markets = {min_workers})"
-    assert nb_workers%min_workers == 0, f"number of workers = {nb_workers}. must be divisable by (models*markets = {min_workers})"
+    assert nb_workers%min_workers == 0, f"number of workers = {nb_workers}. must be divisible by (models*markets = {min_workers})"
 
     # chop up seeds for workers    
     seed_sets = split_seeds(all_seeds, nb_workers//min_workers)
     processes = []
 
-
-    # start training in separate process for (markets * models * seed_sets) preocesses
+    # start training in separate process for (markets * models * seed_sets) processes
     for market_name, dates in all_markets.items(): # for all markets
         tickers = getattr(market_tickers, market_name+'_TICKER')
         for mod_idx, mod_name in enumerate(all_base_names): # for all models
             for seed_idx in range(len(seed_sets)): # for all seed sets
-                proc = Process(target=train_rl, args=(seed_sets[seed_idx], market_name, tickers, mod_name, dates['FROM'], dates['UNTIL'], nb_episodes, save_every))
+                proc = Process(target=train_rl, args=(
+                    seed_sets[seed_idx], 
+                    market_name, 
+                    tickers, 
+                    mod_name, 
+                    dates['FROM'], 
+                    dates['UNTIL'], 
+                    gamma_trades, 
+                    gamma_risks, 
+                    gamma_holds,
+                    nb_episodes, 
+                    save_every))
                 processes.append(proc)
                 proc.start()
             

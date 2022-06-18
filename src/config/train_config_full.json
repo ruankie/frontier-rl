@@ -1,0 +1,21 @@
+{
+	"RANDOM_SEEDS":[0,1111,2222,3333,4444,5555,6666,7777,8888,9999],
+	"MODEL_BASE_NAMES":["RL_CNN","RL_str_fcast","RL_all_inp"],
+	"NB_WORKERS":30,
+	"NB_EPISODES":200,
+	"SAVE_EVERY":200,
+	"MARKETS":{
+		"DOW_30":{
+			"FROM":"2010-01-01",
+			"UNTIL":"2018-01-01"
+		},
+		"NIK_25":{
+			"FROM":"2013-05-01",
+			"UNTIL":"2018-01-01"
+		},
+		"LA_40":{
+			"FROM":"2010-03-01",
+			"UNTIL":"2014-12-01"
+		}
+	}
+}
