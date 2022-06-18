@@ -22,9 +22,9 @@ FRONTIER is a deep reinforcement learning model for portfolio management that ta
 - [x] Add data folders containing market data
 - [x] Set up containerised development environment to easily reproduce results
 - [x] Set up Discord server for project
-- [ ] Add other paper authors as repo contributors (in progress)
+- [x] Add other paper authors as repo contributors (in progress)
     - [x] Add Prof. van Zyl
-    - [ ] Add Andrew
+    - [x] Add Andrew
 - [x] Run simple test on small portfolio (5 assets) to see if containerised environment setup works properly
     - [x] Training of RL models with CNN policy network
     - [x] Backtesting trained RL models with CNN policy network
@@ -50,7 +50,7 @@ FRONTIER is a deep reinforcement learning model for portfolio management that ta
 - [ ] Disable transaction costs and investor preferences and run a simple long-only test to maximise portfolio returns to see how it compares to MA-FDRNN, DDPG, PPO, etc.
 - [x] Update transaction cost function to accomodate short trades - see Boyd et al. (2017)
 - [x] Update transaction cost faunction in reward signal
-- [ ] Update activation function of policy network output layer to allow short positions (and make sure weights sum to 1)
+- [x] Update activation function of policy network output layer to allow short positions (and make sure weights sum to 1)
 - [ ] Run a couple of tests to confirm transaction costs and portfolio balances are modelled correctly
 - [ ] Rerun study experiments on different markets to see how performance is impacted after allowing short trades
 
