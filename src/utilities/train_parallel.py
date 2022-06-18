@@ -6,12 +6,12 @@ import time
 from src.config import market_tickers
 import os
 
-def split_gammas(all_gammas, n):
-    ''' splits a list of gamma-tuples into n sub-tuples.
+def split_seeds(all_seeds, n):
+    ''' splits a list of seeds into n sub-lists.
     '''
-    all_gammas = np.array(all_gammas)
-    gammas_sub_lists = [tuple(map(tuple, arr)) for arr in np.array_split(all_gammas, n)]
-    return tuple(gammas_sub_lists)
+    all_seeds = np.array(all_seeds)
+    seeds_sub_lists = [arr.tolist() for arr in np.array_split(all_seeds, n)]
+    return tuple(seeds_sub_lists)
 
 
 def train_rl(seeds, market_name, tickers, model_base_name, from_date, until_date, 
