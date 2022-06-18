@@ -47,7 +47,7 @@ if __name__ == '__main__':
         os.makedirs('../../notebooks/slave_notebooks/backtests')
 
     # read in config_file
-    with open('../config/backtest_config.json') as json_file:  
+    with open('src/config/backtest_config.json') as json_file:  
         config = json.load(json_file)    
     all_seeds = config['RANDOM_SEEDS']
     all_base_names = config['MODEL_BASE_NAMES']
