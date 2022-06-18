@@ -52,7 +52,7 @@ if __name__ == '__main__':
         os.makedirs('../../notebooks/slave_notebooks')
 
     # read in config_file
-    with open('train_config.json') as json_file:  
+    with open('../config/train_config.json') as json_file:  
         config = json.load(json_file)    
     all_seeds = config['RANDOM_SEEDS']
     all_base_names = config['MODEL_BASE_NAMES']
