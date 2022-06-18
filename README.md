@@ -5,24 +5,42 @@
 # Description
 FRONTIER is a deep reinforcement learning model for portfolio management that takes investor preferences into account. The original version allows long-only trades (see [this paper](https://doi.org/10.36227/techrxiv.19165745.v1) for more details). This repo will extend the original version to allow short trades as well.
 
-# How to use
-1. Clone this repo onto your machine
-1. Open development environment using one of the following methods:
-    * Open in VS code using the `Remote-Containers` extension
-    * Manually reproduce the development environment using the Dockerfile in `.devcontainer/`
-    * Install the requiremetns in your local environment by running `pip install -r requirements.txt`
-1. Insert your API keys and desired plot teme into `.env` as per `.env_example`
-1. Browse through `src/models/frontier.py` to see the details of the environment and model architecture, training, backtesting, etc.
-1. Run `notebooks/train_template.ipynb` to see an example of how the models are trained
-1. Run `notebooks/backtest_template.ipynb` to see an example of how trained modela are backtested
+# Usage 
+There are two ways to set up this development environment. One for development with VS Code, and the other for development through a browser interface using Jupyter Lab. Please refer to the relevant section below:
+
+## Using VS Code
+1. Ensure your VS Code has the `Remote-Containers` extension installed
+2. Clone this repo
+3. Open the root folder using the `Remote-Containers` extension:
+   1. Open your command pallette in VS Code (`fn`+`F1`)
+   2. Type in and select: `Remote-Containers: Open Folder in Container`
+   3. Select the `frontier-rl` folder
+   4. Wait for the container to build (first time will take a couple of minutes)
+4. Once the container is built, you can start developing.
+5. Insert your API keys and desired plot theme into `.env` as per `.env_example`
+6. Browse through `src/models/frontier.py` to see the details of the environment and model architecture, training, backtesting, etc.
+7. Run `notebooks/train_template.ipynb` to see an example of how the models are trained
+8. Run `notebooks/backtest_template.ipynb` to see an example of how trained models are backtested
+
+## Using Jupyter Lab
+1. Clone this repo
+2. Navigate to the `.devcontainer` folder by running `cd frontier-rl/.devcontainer`
+3. Build the development environment container by running `docker-compose up` (this will build and configure the environment and start a jupyter lab server inside the notebook which can be accessed remotely)
+4. Once done, open a web browser and navigate to the jupyter server using your token. It should be something like `http://127.0.0.1:10000/lab?token=f1731cd54965375ea245efc131ef6c1172f415139e38e8e9`
+5. Now you can start developing.
+6. Insert your API keys and desired plot theme into `.env` as per `.env_example`
+7. Browse through `src/models/frontier.py` to see the details of the environment and model architecture, training, backtesting, etc.
+8. Run `notebooks/train_template.ipynb` to see an example of how the models are trained
+9. Run `notebooks/backtest_template.ipynb` to see an example of how trained models are backtested
+
 
 # Roadmap (TODO)
-### Setting up contributors and development environment
+## Setting up contributors and development environment
 - [x] Add code from original study
 - [x] Add data folders containing market data
 - [x] Set up containerised development environment to easily reproduce results
     - [x] Fore development with VS Code through the `Remote-Containers` extension
-    - [ ] For remote development with Jupyter Lab through jupyter server in container
+    - [x] For remote development with Jupyter Lab through jupyter server in container
 - [x] Set up Discord server for project
 - [x] Add other paper authors as repo contributors (in progress)
     - [x] Add Prof. van Zyl
@@ -47,7 +65,7 @@ FRONTIER is a deep reinforcement learning model for portfolio management that ta
 - [x] Add plot preferences config (LaTeX-like font and light/dark theme selector)
     
 
-### Add changes to extend study
+## Add changes to extend study
 - [x] Branch off main to add new features for NCAA paper
 - [ ] Disable transaction costs and investor preferences and run a simple long-only test to maximise portfolio returns to see how it compares to MA-FDRNN, DDPG, PPO, etc.
 - [x] Update transaction cost function to accomodate short trades - see Boyd et al. (2017)
@@ -56,7 +74,7 @@ FRONTIER is a deep reinforcement learning model for portfolio management that ta
 - [ ] Run a couple of tests to confirm transaction costs and portfolio balances are modelled correctly
 - [ ] Rerun study experiments on different markets to see how performance is impacted after allowing short trades
 
-### Publish paper and code
+## Publish paper and code
 - [ ] Write paper
 - [ ] Make docs from docstrings for all code
 - [ ] Include detailed README or documentation for steps to use repo and reproduce results
