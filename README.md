@@ -8,7 +8,20 @@ FRONTIER is a deep reinforcement learning model for portfolio management that ta
 # Usage 
 There are two ways to set up this development environment. One for development with VS Code, and the other for development through a browser interface using Jupyter Lab. Please refer to the relevant section below:
 
-## Using VS Code
+## Running parallelised experiments
+### Training
+Specify your training configuration settings in `src/config/train_config.json` and run:
+```bash
+python src/utilities/train_parallel.py
+```
+
+### Backtesting
+Specify your backtesting configuration settings in `src/config/backtest_config.json` and run:
+```bash
+python src/utilities/backtest_parallel.py
+```
+
+## Developing in VS Code
 *Prerequisites: You must have [Docker](https://docs.docker.com/get-docker/) and [VS Code](https://code.visualstudio.com/download) installed.*
 1. Ensure your VS Code has the `Remote-Containers` extension installed
 2. Clone this repo
@@ -23,7 +36,7 @@ There are two ways to set up this development environment. One for development w
 7. Run `notebooks/train_template.ipynb` to see an example of how the models are trained
 8. Run `notebooks/backtest_template.ipynb` to see an example of how trained models are backtested
 
-## Using Jupyter Lab
+## Developing in  Jupyter Lab
 *Prerequisites: You must have [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/) installed.*
 1. Clone this repo
 2. Navigate to the `.devcontainer` folder by running `cd frontier-rl/.devcontainer`
