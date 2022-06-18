@@ -14,16 +14,20 @@ def split_seeds(all_seeds, n):
     return tuple(seeds_sub_lists)
 
 
-def backtest_rl(seeds, market_name, tickers, model_base_name, from_date, until_date, nb_episodes=200):
+def backtest_rl(seeds, market_name, tickers, model_base_name, from_date, until_date, 
+                gamma_trades, gamma_risks, gamma_holds, nb_episodes):
 
-    assert market_name in ['TEST_5','DOW_30','NIK_25','LA_40'], 'must choose a valid market name (or update valid list in assertion).'
+    assert market_name in ['TEST_5', 'SP_11', 'DOW_30','NIK_25','LA_40', 'SP_500'], 'must choose a valid market name (or update valid list in assertion).'
     assert model_base_name in ['RL_CNN','RL_str_fcast','RL_all_inp'], 'must choose a valid model base name (RL_CNN or RL_str_fcast or RL_all_inp).'
+
+    # set path to notebooks
+    os.chdir(os.path.abspath('../../notebooks/'))
 
     start = time.time()
     print(f'\tstarting {model_base_name} on {market_name} [{from_date} - {until_date}] with seeds {seeds}.')
     pm.execute_notebook(
-                    input_path='../../notebooks/backtest_template.ipynb',
-                    output_path=f'../../notebooks/slave_notebooks/backtests/{model_base_name}_{market_name}_({seeds[0]}_etc).ipynb',
+                    input_path='backtest_template.ipynb',
+                    output_path=f'slave_notebooks/backtests/{model_base_name}_{market_name}_({seeds[0]}_etc).ipynb',
                     parameters={
                                 'SEED_LIST':seeds,
                                 'TICKERS':tickers,
@@ -32,6 +36,9 @@ def backtest_rl(seeds, market_name, tickers, model_base_name, from_date, until_d
                                 'FROM':from_date,
                                 'UNTIL':until_date,
                                 'NB_EPISODES':nb_episodes,
+                                'GAMMA_TRADES':gamma_trades,
+                                'GAMMA_RISKS':gamma_risks,
+                                'GAMMA_HOLDS':gamma_holds
                                },
                     progress_bar=True,
                    )
@@ -39,6 +46,10 @@ def backtest_rl(seeds, market_name, tickers, model_base_name, from_date, until_d
 
 
 if __name__ == '__main__':
+
+    # change dir to where this file is located 
+    # so the context is the same no matter where it's run from
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
     # start timer
     #main_start = time.time()
@@ -53,6 +64,9 @@ if __name__ == '__main__':
     all_base_names = config['MODEL_BASE_NAMES']
     nb_episodes = config['NB_EPISODES']
     all_markets = config['MARKETS']
+    gamma_trades = config['GAMMA_TRADES']
+    gamma_risks = config['GAMMA_RISKS']
+    gamma_holds = config['GAMMA_HOLDS']
     nb_workers = config['NB_WORKERS']
     if nb_workers == -1:
         nb_workers = cpu_count()    
@@ -61,19 +75,29 @@ if __name__ == '__main__':
     # min amount of workers
     min_workers = len(all_base_names)*len(all_markets) # models * markets = 9
     assert min_workers<=nb_workers, f"number of workers = {nb_workers}. must be greater or equal to (models*markets = {min_workers})"
-    assert nb_workers%min_workers == 0, f"number of workers = {nb_workers}. must be divisable by (models*markets = {min_workers})"
+    assert nb_workers%min_workers == 0, f"number of workers = {nb_workers}. must be divisible by (models*markets = {min_workers})"
 
     # chop up seeds for workers    
     seed_sets = split_seeds(all_seeds, nb_workers//min_workers)
     processes = []
 
 
-    # start training in separate process for (markets * models * seed_sets) preocesses
+    # start training in separate process for (markets * models * seed_sets) processes
     for market_name, dates in all_markets.items(): # for all markets
         tickers = getattr(market_tickers, market_name+'_TICKER')
         for mod_idx, mod_name in enumerate(all_base_names): # for all models
             for seed_idx in range(len(seed_sets)): # for all seed sets
-                proc = Process(target=backtest_rl, args=(seed_sets[seed_idx], market_name, tickers, mod_name, dates['FROM'], dates['UNTIL'], nb_episodes))
+                proc = Process(target=backtest_rl, args=(
+                    seed_sets[seed_idx], 
+                    market_name, 
+                    tickers, 
+                    mod_name, 
+                    dates['FROM'], 
+                    dates['UNTIL'],  
+                    gamma_trades, 
+                    gamma_risks, 
+                    gamma_holds,
+                    nb_episodes))
                 processes.append(proc)
                 proc.start()
             
