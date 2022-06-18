@@ -20,11 +20,14 @@ def train_rl(seeds, market_name, tickers, model_base_name, from_date, until_date
     assert market_name in ['TEST_5', 'SP_11', 'DOW_30','NIK_25','LA_40', 'SP_500'], 'must choose a valid market name (or update valid list in assertion).'
     assert model_base_name in ['RL_CNN','RL_str_fcast','RL_all_inp'], 'must choose a valid model base name: "RL_CNN","RL_str_fcast", or "RL_all_inp".'
 
+    # set path to notebooks
+    os.chdir(os.path.abspath('../../notebooks/'))
+
     start = time.time()
     print(f'\tstarting {model_base_name} on {market_name} [{from_date} - {until_date}] with seeds {seeds}.')
     pm.execute_notebook(
-                    input_path='../../notebooks/train_template.ipynb',
-                    output_path=f'../../notebooks/slave_notebooks/{model_base_name}_{market_name}_({seeds[0]}_etc).ipynb',
+                    input_path='train_template.ipynb',
+                    output_path=f'slave_notebooks/{model_base_name}_{market_name}_({seeds[0]}_etc).ipynb',
                     parameters={
                                 'SEED_LIST':seeds,
                                 'TICKERS':tickers,
@@ -44,6 +47,10 @@ def train_rl(seeds, market_name, tickers, model_base_name, from_date, until_date
 
 
 if __name__ == '__main__':
+
+    # change dir to where this file is located 
+    # so the context is the same no matter where it's run from
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
     # start timer
     #main_start = time.time()

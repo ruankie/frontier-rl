@@ -12,15 +12,13 @@ There are two ways to set up this development environment. One for development w
 ### Training
 Specify your training configuration settings in `src/config/train_config.json` and run:
 ```bash
-cd src/utilities
-python train_parallel.py
+python src/utilities/train_parallel.py
 ```
 
 ### Backtesting
 Specify your backtesting configuration settings in `src/config/backtest_config.json` and run:
 ```bash
-cd src/utilities
-python backtest_parallel.py
+python src/utilities/backtest_parallel.py
 ```
 
 ## Developing in VS Code
