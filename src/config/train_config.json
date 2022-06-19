@@ -8,9 +8,9 @@
 	"NB_EPISODES":200,
 	"SAVE_EVERY":200,
 	"MARKETS":{
-		"TEST_5":{
-			"FROM":"2017-01-03",
-			"UNTIL":"2019-01-01"
+		"DOW_30":{
+			"FROM":"2010-01-01",
+			"UNTIL":"2018-01-01"
 		}
 	}
 }
