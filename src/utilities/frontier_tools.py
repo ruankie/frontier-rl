@@ -31,7 +31,7 @@ def get_all_backtests_df(backtests_dir):
         dfs.append(pd.read_csv(f'{file_dir}'))
     return pd.concat(dfs, ignore_index=True)
 
-def get_all_seed_frontiers(all_results_df, data_dir, market_name, model_name, plot_all_pts=False, alpha=0.2, figsize=(8,5)):
+def get_all_seed_frontiers(all_results_df, data_dir, market_name, model_name, plot_all_pts=False, alpha=0.2, figsize=(8,5), xlim=None, ylim=None):
     '''
     take a backtest results df containing multiple seed values 
     and plot pareto frontier for each seed set. optionally plot
@@ -52,7 +52,13 @@ def get_all_seed_frontiers(all_results_df, data_dir, market_name, model_name, pl
     ax.set_xlabel('Excess risk (%)')
     ax.set_ylabel('Excess return (%)')
     plot_title = f'Seeded Backtests: {market_name} {model_name}'
-    ax.set_title(plot_title);
+    ax.set_title(plot_title)
+    
+    if xlim != None:
+        ax.set_xlim(xlim)
+
+    if ylim != None:
+        ax.set_ylim(ylim)
 
     save_name = f'{data_dir}{market_name}_{model_name}_seed_frontiers'
     plt.savefig(f'{save_name}.png', dpi=150, facecolor=None, edgecolor=None, bbox_inches='tight')
@@ -60,6 +66,8 @@ def get_all_seed_frontiers(all_results_df, data_dir, market_name, model_name, pl
     all_frontier_df = pd.concat(all_frontier_dfs, ignore_index=True)
     all_frontier_df.to_csv(f'{data_dir}{market_name}_{model_name}_seed_frontiers.csv', index=False)
     print('\tdf saved.')
+
+    return all_frontier_df
 
 def get_critical_t(n, alpha=0.05):
     return scipy.stats.t.ppf(q=1-alpha/2,df=n-1)
