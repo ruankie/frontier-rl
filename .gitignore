@@ -3,8 +3,10 @@
 
 # experiments (trained models, losses, etc.)
 #*experiments/
-*seeded/
+#*seeded/
 #*models/
+#*losses*
+*seed_*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
