@@ -30,7 +30,7 @@ def train_rl(seeds, market_name, tickers, model_base_name, from_date, until_date
     print(f'\tstarting {model_base_name} on {market_name} [{from_date} - {until_date}] with seeds {seeds}.')
     pm.execute_notebook(
                     input_path='train_template.ipynb',
-                    output_path=f'slave_notebooks/{model_base_name}_{market_name}_risks_{gamma_risks[0]}_{seeds[0]}.ipynb',
+                    output_path=f'slave_notebooks/{model_base_name}_{market_name}_risks_{gamma_risks[0]}_seeds_{seeds[0]}.ipynb',
                     parameters={
                                 'SEED_LIST':seeds,
                                 'TICKERS':tickers,
