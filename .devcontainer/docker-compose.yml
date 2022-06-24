@@ -2,6 +2,9 @@ version: '3.3'
 services:
   jupyter:
     platform: linux/x86_64
+    cpu_count: 64
+    cpus: 0.000
+    mem_limit: 200g
     build:
       context: ..
       dockerfile: ./.devcontainer/Dockerfile
