@@ -46,7 +46,7 @@ def train_rl(seeds, market_name, tickers, model_base_name, from_date, until_date
                                },
                     progress_bar=True,
                    )
-    print(f'\tdone with {model_base_name} on {market_name} ({seeds[0]}...) in ', round(time.time() - start,2), 'seconds.')
+    print(f'\tdone with {model_base_name} on {market_name} (risks:{gamma_risks[0]}.. seeds:{seeds[0]}..) in ', round(time.time() - start,2), 'seconds.')
 
 
 if __name__ == '__main__':
