@@ -75,8 +75,8 @@ if __name__ == '__main__':
     print('number of workers chosen:',nb_workers)
 
     # split up seeds and gamma_risks into sets
-    nb_seed_sets = 1 if (nb_workers >= len(all_seeds)) else len(all_seeds)//nb_workers
-    nb_gamma_risks_sets = 1 if (nb_workers >= len(gamma_risks)) else len(gamma_risks)//nb_workers
+    nb_seed_sets = 1 #if (nb_workers >= len(all_seeds)) else len(all_seeds)//nb_workers
+    nb_gamma_risks_sets = nb_workers//len(all_markets) if (nb_workers >= len(gamma_risks)) else len(gamma_risks)//nb_workers
     seed_sets = split_list(all_seeds, nb_seed_sets)
     gamma_risks_sets = split_list(gamma_risks, nb_gamma_risks_sets)
 
