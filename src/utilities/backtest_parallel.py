@@ -6,11 +6,11 @@ import time
 from src.config import market_tickers
 import os
 
-def split_seeds(all_seeds, n):
-    ''' splits a list of seeds into n sub-lists.
+def split_list(original_list, n):
+    ''' splits a list into n sub-lists.
     '''
-    all_seeds = np.array(all_seeds)
-    seeds_sub_lists = [arr.tolist() for arr in np.array_split(all_seeds, n)]
+    original_list = np.array(original_list)
+    seeds_sub_lists = [arr.tolist() for arr in np.array_split(original_list, n)]
     return tuple(seeds_sub_lists)
 
 
@@ -42,8 +42,7 @@ def backtest_rl(seeds, market_name, tickers, model_base_name, from_date, until_d
                                },
                     progress_bar=True,
                    )
-    print(f'\tdone with {model_base_name} on {market_name} ({seeds[0]}...) in ', round(time.time() - start,2), 'seconds.')
-
+    print(f'\tdone with {model_base_name} on {market_name} (risks:{gamma_risks[0]}.. seeds:{seeds[0]}..) in ', round(time.time() - start,2), 'seconds.')
 
 if __name__ == '__main__':
 
@@ -72,34 +71,36 @@ if __name__ == '__main__':
         nb_workers = cpu_count()    
     print('number of workers chosen:',nb_workers)
 
-    # min amount of workers
-    min_workers = len(all_base_names)*len(all_markets) # models * markets = 9
-    assert min_workers<=nb_workers, f"number of workers = {nb_workers}. must be greater or equal to (models*markets = {min_workers})"
-    assert nb_workers%min_workers == 0, f"number of workers = {nb_workers}. must be divisible by (models*markets = {min_workers})"
+    # split up seeds and gamma_risks into sets
+    nb_seed_sets = 1 #if (nb_workers >= len(all_seeds)) else len(all_seeds)//nb_workers
+    nb_gamma_risks_sets = nb_workers//len(all_markets) if (nb_workers >= len(gamma_risks)) else len(gamma_risks)//nb_workers
+    seed_sets = split_list(all_seeds, nb_seed_sets)
+    gamma_risks_sets = split_list(gamma_risks, nb_gamma_risks_sets)
 
-    # chop up seeds for workers    
-    seed_sets = split_seeds(all_seeds, nb_workers//min_workers)
+    # min amount of workers required for workload and config
+    min_workers = len(all_markets) * len(all_base_names) * len(seed_sets) * len(gamma_risks_sets)
+    assert min_workers<=nb_workers, f"Number of workers allowed: {nb_workers}. Minimum number of workers required: {min_workers}. Allow more workers!)"
+
     processes = []
-
-
     # start training in separate process for (markets * models * seed_sets) processes
     for market_name, dates in all_markets.items(): # for all markets
         tickers = getattr(market_tickers, market_name+'_TICKER')
         for mod_idx, mod_name in enumerate(all_base_names): # for all models
             for seed_idx in range(len(seed_sets)): # for all seed sets
-                proc = Process(target=backtest_rl, args=(
-                    seed_sets[seed_idx], 
-                    market_name, 
-                    tickers, 
-                    mod_name, 
-                    dates['FROM'], 
-                    dates['UNTIL'],  
-                    gamma_trades, 
-                    gamma_risks, 
-                    gamma_holds,
-                    nb_episodes))
-                processes.append(proc)
-                proc.start()
+                for gamma_risk_idx in range(len(gamma_risks_sets)):
+                    proc = Process(target=backtest_rl, args=(
+                        seed_sets[seed_idx], 
+                        market_name, 
+                        tickers, 
+                        mod_name, 
+                        dates['FROM'], 
+                        dates['UNTIL'],  
+                        gamma_trades, 
+                        gamma_risks_sets[gamma_risk_idx],  
+                        gamma_holds,
+                        nb_episodes))
+                    processes.append(proc)
+                    proc.start()
             
     for p in processes:
         p.join()
