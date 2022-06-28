@@ -8,6 +8,9 @@
 #*losses*
 *seed_*
 
+# slave notebooks
+*slave_notebooks*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
