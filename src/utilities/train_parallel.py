@@ -14,7 +14,7 @@ def split_list(original_list, n):
     return tuple(seeds_sub_lists)
 
 
-def train_rl(seeds, market_name, tickers, model_base_name, from_date, until_date, 
+def train_rl(seeds, market_name, tickers, model_base_name, allow_long_short_trades, from_date, until_date, 
             gamma_trades, gamma_risks, gamma_holds, nb_episodes, save_every):
 
     assert market_name in ['TEST_5', 'SP_11', 'DOW_30','NIK_25','LA_40', 'SP_500'], 'must choose a valid market name (or update valid list in assertion).'
@@ -33,6 +33,7 @@ def train_rl(seeds, market_name, tickers, model_base_name, from_date, until_date
                                 'TICKERS':tickers,
                                 'MARKET_NAME':market_name,
                                 'MODEL_BASE_NAME':model_base_name,
+                                'ALLOW_LONG_SHORT_TRADES':allow_long_short_trades,
                                 'FROM':from_date,
                                 'UNTIL':until_date,
                                 'NB_EPISODES':nb_episodes,
@@ -63,6 +64,7 @@ if __name__ == '__main__':
         config = json.load(json_file)    
     all_seeds = config['RANDOM_SEEDS']
     all_base_names = config['MODEL_BASE_NAMES']
+    allow_long_short_trades = config['ALLOW_LONG_SHORT_TRADES']
     nb_episodes = config['NB_EPISODES']
     save_every = config['SAVE_EVERY']
     all_markets = config['MARKETS']
@@ -96,6 +98,7 @@ if __name__ == '__main__':
                         market_name, 
                         tickers, 
                         mod_name, 
+                        allow_long_short_trades,
                         dates['FROM'], 
                         dates['UNTIL'], 
                         gamma_trades, 
