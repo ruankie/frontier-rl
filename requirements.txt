@@ -41,7 +41,7 @@ tensorflow==2.4.0
 yfinance==0.1.70
 typing-extensions==3.10.0.2
 protobuf==3.20.1
--e .
+# -e .
 
 
 # all requiremetns:
