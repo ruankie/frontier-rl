@@ -16,5 +16,5 @@ services:
         frontier
     ports:
       - "10000:10000"
-    command:  jupyter lab --notebook-dir=/app --ip="0.0.0.0" --port=10000 --no-browser --allow-root
+    command: jupyter lab --notebook-dir=/app --ip="0.0.0.0" --port=10000 --no-browser --allow-root
     container_name: frontier
