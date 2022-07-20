@@ -6,6 +6,17 @@ import time
 from src.config import market_tickers
 import os
 
+def make_int(x):
+    """ if x is an integer (e.g. 2.0), return its integer value without trailing zeroes (e.g. 2)
+    works for lists or tuples of numbers too
+    """
+    if isinstance(x, list) or isinstance(x, tuple):
+        return [int(i) if i.is_integer() else i for i in x]
+    
+    if x.is_integer():
+        x = int(x)
+    return x
+
 def split_list(original_list, n):
     ''' splits a list into n sub-lists.
     '''
@@ -80,7 +91,7 @@ if __name__ == '__main__':
     nb_seed_sets = 1 #if (nb_workers >= len(all_seeds)) else len(all_seeds)//nb_workers
     nb_gamma_risks_sets = nb_workers//len(all_markets) if (nb_workers >= len(gamma_risks)) else len(gamma_risks)//nb_workers
     seed_sets = split_list(all_seeds, nb_seed_sets)
-    gamma_risks_sets = split_list(gamma_risks, nb_gamma_risks_sets)
+    gamma_risks_sets = tuple([make_int(lst) for lst in split_list(gamma_risks, nb_gamma_risks_sets)])
 
     # min amount of workers required for workload and config
     min_workers = len(all_markets) * len(all_base_names) * len(seed_sets) * len(gamma_risks_sets)
