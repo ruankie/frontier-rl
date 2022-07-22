@@ -370,9 +370,15 @@ class MultiStockEnv:
         self.prev_actions = []
         
         # initial portfolio vector (equally weighted and fully invested as in Boyd et al. (2017))
-        w = np.ones(self.nb_assets)
-        w[-1] = 0.0 # none in cash
-        w /= w.sum()            
+        # w = np.ones(self.nb_assets)
+        # w[-1] = 0.0 # none in cash
+        # w /= w.sum()        
+        
+        # initial portfolio vector - fully invested in cash
+        w = np.zeroes(self.nb_assets)
+        w[-1] = 1.0 # fully invested in cash
+
+        # convert portfolio vector to tensorflow tensor and update action history
         w = tf.convert_to_tensor(w, dtype=tf.float32)
         self.prev_actions.append(w)
 
