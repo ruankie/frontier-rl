@@ -377,7 +377,7 @@ class MultiStockEnv:
         # initial portfolio vector - fully invested in cash
         if self.cash_key == None:
             raise Exception('Cannot start fully invested in cash when cash asset is disabled!')
-        w = np.zeroes(self.nb_assets)
+        w = np.zeros(self.nb_assets)
         w[-1] = 1.0 # fully invested in cash
 
         # convert portfolio vector to tensorflow tensor and update action history
