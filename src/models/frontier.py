@@ -571,7 +571,7 @@ class LongShortCNNPolicy(tf.keras.Model):
         self.flatten = Flatten()
         self.concat = Concatenate()
         self.dense = Dense(3*n_assets, activation='relu')
-        self.long_short = Dense(n_assets, activation='tanh')
+        self.long_short = Dense(n_assets, activation=None) # linear activation
 
     def call(self, state):
         log_rets_window = tf.expand_dims([tf.transpose(state[0])], axis=-1) # transpose and add batch dim
