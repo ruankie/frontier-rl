@@ -1,6 +1,8 @@
-![GitHub](https://img.shields.io/github/license/ruankie/frontier-rl) 
-![GitHub contributors](https://img.shields.io/github/contributors/ruankie/frontier-rl) 
-![GitHub last commit](https://img.shields.io/github/last-commit/ruankie/frontier-rl)
+[![GitHub contributors](https://img.shields.io/github/contributors/ruankie/frontier-rl)](https://github.com/ruankie/frontier-rl/graphs/contributors)
+[![GitHub last commit](https://img.shields.io/github/last-commit/ruankie/frontier-rl)](https://github.com/ruankie/frontier-rl/commits/main)
+[![GitHub forks](https://img.shields.io/github/forks/ruankie/frontier-rl)](https://github.com/ruankie/frontier-rl/network)
+[![GitHub stars](https://img.shields.io/github/stars/ruankie/frontier-rl)](https://github.com/ruankie/frontier-rl/stargazers)
+[![GitHub license](https://img.shields.io/github/license/ruankie/frontier-rl)](https://github.com/ruankie/frontier-rl/blob/main/LICENSE)
 
 # Description
 FRONTIER is a deep reinforcement learning model for portfolio management that takes investor preferences into account. The original version allows long-only trades (see [this paper](https://doi.org/10.36227/techrxiv.19165745.v1) for more details). This repo will extend the original version to allow short trades as well.
